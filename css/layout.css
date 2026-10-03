@@ -1,0 +1,163 @@
+/* ============================================================
+   layout.css - Uygulama iskeleti, ekranlar, kolon duzenleri
+   ============================================================ */
+.app {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    z-index: 10;
+    background: radial-gradient(120% 100% at 20% 0%, var(--bg-grad-a) 0%, var(--bg-grad-b) 70%);
+}
+
+/* Oynatici aktifken sayfayi seffaf yap ki donanim video katmani gorunsun */
+body.player-active .app { background: transparent; }
+
+.view {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    display: none;
+}
+.view.is-active { display: block; }
+
+/* Guvenli alan (overscan) padding'i */
+.safe {
+    position: absolute;
+    left: var(--safe-x); right: var(--safe-x);
+    top: var(--safe-y); bottom: var(--safe-y);
+}
+
+/* ---------- Ust bar ---------- */
+.topbar {
+    position: absolute;
+    left: var(--safe-x); right: var(--safe-x);
+    top: var(--safe-y);
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.topbar__title { font-size: 2.5rem; font-weight: 700; }
+.topbar__spacer { flex: 1; }
+.topbar__meta {
+    display: flex; align-items: center; gap: 1.25rem;
+    font-size: 1.375rem; color: var(--text-dim);
+}
+.topbar__clock { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); }
+
+/* ---------- Ic gövde (topbar altindan itibaren) ----------
+   Alt kenar, ipucu cubuguna (.hintbar) yer birakir. Onceden govde
+   ekranin dibine kadar iniyordu ve ipucu yazilari listelerin /
+   afislerin ustune biniyordu. */
+.body {
+    position: absolute;
+    left: var(--safe-x); right: var(--safe-x);
+    top: calc(var(--safe-y) + 5rem);
+    bottom: calc(var(--safe-y) + 2rem);
+}
+
+/* ---------- Uc kolonlu Canli TV duzeni ---------- */
+.cols {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    gap: 1.5rem;
+}
+.col { position: relative; height: 100%; min-width: 0; }
+.col--cats     { flex: 0 0 21rem; }
+.col--channels { flex: 1 1 auto; }
+.col--side     { flex: 0 0 34rem; }
+
+/* Kolon basligi. Tum kolonlarda AYNI yukseklikte ki yan yana duran
+   panellerin ust kenarlari hizali olsun. Sag tarafinda arama kutusu
+   (.col__tool) tasiyabilir. */
+.col__head {
+    height: 4rem;
+    display: flex; align-items: center; gap: 1rem;
+    font-size: 1.375rem; font-weight: 600;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+.col__title {
+    flex: 1 1 auto; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.col__body {
+    position: absolute;
+    left: 0; right: 0; top: 4.5rem; bottom: 0;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* ---------- Acilis gorseli (splash) ---------- */
+.splash {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    z-index: 200;                 /* app (10) ve overlay (100) uzerinde */
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 450ms ease;
+}
+.splash.is-hiding { opacity: 0; }
+.splash__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;            /* 16:9 disi gorsellerde de tasma olmasin */
+}
+
+/* Afis izgarasi cercevesiz durur: afisler sayfa zemininde, koseleri
+   panelin yuvarlak kenarinda kirpilmaz. */
+.col__body--bare { background: transparent; border: 0; border-radius: 0; }
+
+/* ---------- Kolon basligindaki arama kutusu ----------
+   Onceden basligin ALTINDA ayri bir satir kapliyordu (80 px); afis
+   izgarasinda iki tam satir sigmiyor, odaklanan satir kesiliyordu.
+   Artik basligin sag ucunda durur. */
+.col__tool { flex: 0 0 26rem; min-width: 0; }
+.col__tool .field { margin-bottom: 0; }
+.col__tool .field__box { min-height: 3.25rem; padding: 0 1rem; }
+.col__tool .field__input {
+    font-size: 1.375rem; padding: .35rem 0;
+    text-transform: none; letter-spacing: 0; font-weight: 400;
+}
+
+/* ---------- Alt ipucu cubugu (kumanda tuslari) ---------- */
+.hintbar {
+    position: absolute;
+    left: var(--safe-x); right: var(--safe-x);
+    bottom: calc(var(--safe-y) - 1rem);
+    height: 2.25rem;
+    display: flex; gap: 2rem; align-items: center;
+    font-size: 1.125rem; color: var(--text-mute);
+    white-space: nowrap; overflow: hidden;
+}
+.hint { display: inline-flex; align-items: center; gap: .5rem; }
+.hint__key {
+    display: inline-block;
+    min-width: 2.2rem; padding: .1rem .5rem;
+    text-align: center;
+    border: 1px solid var(--border-strong);
+    border-radius: .35rem;
+    font-size: 1rem; color: var(--text-dim);
+}
+
+/* ---------- Yardimci ---------- */
+.hidden { display: none !important; }
+.flex   { display: flex; }
+.fill   { flex: 1 1 auto; min-width: 0; }
+.center { display: flex; align-items: center; justify-content: center; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clamp-2 {
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.clamp-4 {
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+    overflow: hidden;
+}

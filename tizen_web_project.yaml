@@ -1,0 +1,110 @@
+# Project type [web_app, test_runner]
+project_type: web_app
+
+# Default profile, Tizen API version
+profile: tv-samsung
+api_version: "8.0"
+
+# Build type [Debug/ Release/ Test]
+build_type: Debug
+
+# Output name for application
+output_name: IPTVPlayer
+
+# Output path for build
+output_path: ""
+
+# Enable size optimization of wgt for web workspace
+opt: false
+
+# Signing profile to be used for Tizen package signing
+# If value is empty: "", active signing profile will be used
+# Else If value is ".", default signing profile will be used
+signing_profile: ""
+
+# list of certs in web project (.trust-anchor)
+trust_anchor: []
+
+# list of files in web project (.html,.css etc) and resources
+files:
+  - KURULUM.md
+  - README.md
+  - assets/icon.png
+  - css/components.css
+  - css/layout.css
+  - css/reset.css
+  - css/theme.css
+  - css/views.css
+  - icon.png
+  - index.html
+  - js/app.js
+  - js/core/actions.js
+  - js/core/cache.js
+  - js/core/errors.js
+  - js/core/events.js
+  - js/core/http.js
+  - js/core/keys.js
+  - js/core/logger.js
+  - js/core/nav.js
+  - js/core/polyfill.js
+  - js/core/router.js
+  - js/core/settings.js
+  - js/core/storage.js
+  - js/core/utils.js
+  - js/ui/field.js
+  - js/ui/imageLoader.js
+  - js/ui/loading.js
+  - js/ui/modal.js
+  - js/ui/toast.js
+  - js/ui/virtualList.js
+  - player/avplay.js
+  - player/controller.js
+  - player/html5.js
+  - request.md
+  - services/content.js
+  - services/epg.js
+  - services/favorites.js
+  - services/history.js
+  - services/m3u.js
+  - services/profile.js
+  - services/xtream.js
+  - views/favorites.js
+  - views/home.js
+  - views/live.js
+  - views/login.js
+  - views/movies.js
+  - views/player.js
+  - views/recent.js
+  - views/search.js
+  - views/series.js
+  - views/seriesDetail.js
+  - views/settings.js
+
+# list of files to exclude based on the matched patterns
+excludes:
+  - Build/*
+  - Debug/*
+  - Directory.Build.targets
+  - Release/*
+  - Test/*
+  - \.Build/.*
+  - \.buildResult/.*
+  - \.csproj
+  - \.externalToolBuilders/.*
+  - \.gn
+  - \.obj/.*
+  - \.package/.*
+  - \.project
+  - \.rds_delta
+  - \.sdk_delta.info
+  - \.settings/.*
+  - \.sign/.*
+  - \.tizen-ui-builder-tool.xml
+  - \.tproject
+  - \.wgt
+  - tizen_web_project.yaml
+  - webUnitTest/*
+
+# project dependencies
+deps: []
+

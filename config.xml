@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Samsung Tizen TV Web Application manifest
+  =========================================
+  HEDEF CIHAZ: 2025 model Samsung TV (Tizen 9.0)
+
+  required_version="8.0"
+    Tizen API taban surumu. 8.0 secildi cunku 2024+ TV'lerin tamamini
+    kapsar ve Tizen 9.0 cihazlar geriye donuk uyumludur.
+    >>> Tizen Studio "required_version is not supported" hatasi verirse
+        (TV Extension surumunuz eskiyse) bu degeri 7.0 veya 6.5 yapin;
+        uygulama kodunda HICBIR degisiklik gerekmez. <<<
+
+  Paket ID (package) 10 karakter alfanumerik olmak ZORUNDADIR.
+  tizen:application id = <package>.<AppName>
+-->
+<widget xmlns="http://www.w3.org/ns/widgets"
+        xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://iptvplayer.local/IPTVPlayer"
+        version="1.0.0"
+        viewmodes="maximized">
+
+    <tizen:application id="IptvPlyr01.IPTVPlayer"
+                       package="IptvPlyr01"
+                       required_version="8.0"/>
+
+    <!-- Samsung TV profili: Tizen Studio bu satiri TV build'i icin ister -->
+    <tizen:profile name="tv-samsung"/>
+
+    <content src="index.html"/>
+
+    <icon src="icon.png"/>
+    <name>IPTV Player</name>
+    <description>Ucretsiz, reklamsiz IPTV oynatici (Xtream Codes + M3U)</description>
+    <author email="user@example.com">IPTV Player</author>
+
+    <!-- ================= PRIVILEGE'LER =================
+         internet          : XHR ile Xtream API / M3U / EPG indirmek ve stream
+                             acmak icin ZORUNLU.
+         tv.inputdevice    : tizen.tvinputdevice.registerKey() ile MediaPlayPause,
+                             ChannelUp/Down, renkli tuslar ve sayi tuslarini
+                             yakalayabilmek icin ZORUNLU.
+         tv.audio          : tizen.tvaudiocontrol - ses seviyesi okuma/degistirme.
+         application.launch: tizen.application.getCurrentApplication().exit()
+                             (Back tusuyla uygulamadan cikis).
+         productinfo       : webapis.productinfo - model / firmware / 4K panel
+                             bilgisi (Ayarlar > Sistem Bilgisi ekraninda).
+         AVPlay icin AYRI privilege GEREKMEZ; internet yeterlidir.
+         (DRM'li icerik icin .../privilege/drmplay gerekir - bu projede yok.)
+    ================================================== -->
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.audio"/>
+    <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+    <tizen:privilege name="http://developer.samsung.com/privilege/productinfo"/>
+    <!-- filesystem.read/write: Ayarlar > "USB'ye Yedekle / Geri Yukle".
+         Tizen bir .wgt yeniden kurulunca uygulamanin localStorage verisini
+         SILER; kayitli playlistlerin kaybolmamasi icin yedek uygulama disindaki
+         bir klasore (USB / Indirilenler) yazilir. -->
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.read"/>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.write"/>
+
+    <!-- Kullanicinin gireceigi HER sunucuya erisebilmek icin joker erisim izni.
+         Tizen 8.0+ CSP varsayilani sikidir; bu iki satir olmadan XHR ve
+         stream istekleri sessizce engellenir. -->
+    <access origin="*" subdomains="true"/>
+    <tizen:allow-navigation>*</tizen:allow-navigation>
+
+    <!-- HTTP (TLS'siz) IPTV sunuculari icin karma icerik izni.
+         Tizen 8.0+ varsayilan olarak insecure request'leri bloklar. -->
+    <tizen:content-security-policy>
+        default-src * 'self' data: blob: 'unsafe-inline' 'unsafe-eval';
+        media-src * data: blob:;
+        img-src * data: blob:;
+        connect-src * data: blob:;
+    </tizen:content-security-policy>
+
+    <!-- Ekran ozellikleri -->
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+
+    <!-- hwkey-event="enable" -> Return/Back tusu keydown olarak JS'e duser (10009)
+         background-support="disable" -> uygulama arka plana atilinca AVPlay durur
+                                          (TV video kaynagini serbest birakir) -->
+    <tizen:setting screen-orientation="landscape"
+                   context-menu="disable"
+                   background-support="disable"
+                   encryption="disable"
+                   install-location="auto"
+                   hwkey-event="enable"/>
+
+    <!-- 4K panellerde uygulama yuzeyinin UHD olarak render edilmesini ister.
+         1080p panellerde yok sayilir. -->
+    <tizen:metadata key="http://samsung.com/tv/metadata/use.tv.window" value="false"/>
+    <tizen:metadata key="http://samsung.com/tv/metadata/support.uhd.resolution" value="true"/>
+</widget>

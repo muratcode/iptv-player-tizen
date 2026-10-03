@@ -1,0 +1,88 @@
+/* ============================================================
+   theme.css - Tasarim token'lari
+   TV'de 3-4 metreden okunabilirlik icin taban font 28px'tir.
+   Tum olculer rem cinsindendir; rem = viewport genisligi / 120
+   => 1920px'de 16px, 3840px'de 32px. Boylece 1080p ve 4K'da
+   ayni layout piksel-mukemmel olceklenir.
+   ============================================================ */
+:root {
+    /* Yuzeyler */
+    --bg:            #070a10;
+    --bg-grad-a:     #0b111c;
+    --bg-grad-b:     #05070c;
+    --surface:       #121824;
+    --surface-2:     #1a2231;
+    --surface-3:     #232d40;
+    --overlay:       rgba(4, 7, 12, 0.86);
+
+    /* Metin - yuksek kontrast (WCAG AA+ koyu zeminde) */
+    --text:          #ffffff;
+    --text-dim:      #b9c4d6;
+    --text-mute:     #7b879b;
+
+    /* Vurgu */
+    --accent:        #2ec5ff;
+    --accent-2:      #0a84ff;
+    --accent-soft:   rgba(46, 197, 255, 0.16);
+    --gold:          #ffc247;
+    --danger:        #ff5a5f;
+    --success:       #37d67a;
+    --warn:          #ffb020;
+
+    --border:        rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.20);
+
+    /* ODAK (focus) - kumandayla secili ogeyi ACIKCA belli eder.
+       IKI CESIT vardir:
+         --focus-glow : DISA dogru halka + parlama. Yalnizca kirpilmayan
+                        yerlerde (kartlar, butonlar, form alanlari) kullanilir.
+         --focus-inset: ICE dogru halka. Liste ve izgara satirlari
+                        overflow:hidden bir kapsayicinin icindedir; disa dogru
+                        golge oralarda KIRPILIR ve "secili sey tam gorunmuyor"
+                        hissi yaratir. Inset golge asla tasmaz. */
+    --focus-ring:    #2ec5ff;
+    --focus-glow:    0 0 0 0.25rem rgba(46,197,255,.95), 0 0 2.2rem rgba(46,197,255,.55);
+    --focus-inset:   inset 0 0 0 0.25rem var(--focus-ring);
+    --focus-fill:    rgba(46,197,255,.22);
+
+    /* Overscan / TV guvenli alan.
+       Eski TV'lerde kenarlardan ~%3 kirpilma olabilir -> 3.5rem (=56px @1080p) */
+    --safe-x: 3.5rem;
+    --safe-y: 2.75rem;
+
+    --radius:    0.75rem;
+    --radius-lg: 1.15rem;
+
+    --t-fast: 120ms;
+    --t-med:  200ms;
+}
+
+html {
+    /* 120 = 1920/16 -> tam olcekleme */
+    font-size: calc(100vw / 120);
+    /* Cok dar/genis ekranlarda tasmayi engelle */
+    background: var(--bg);
+}
+
+body {
+    font-family: "Samsung One", "SamsungOne", "Tizen Sans", "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 1.75rem;           /* 28px @1080p */
+    line-height: 1.35;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Tipografi olcegi */
+.t-hero  { font-size: 3.5rem;  font-weight: 700; letter-spacing: -0.02em; }
+.t-h1    { font-size: 2.75rem; font-weight: 700; }
+.t-h2    { font-size: 2.25rem; font-weight: 600; }
+.t-h3    { font-size: 1.875rem;font-weight: 600; }
+.t-body  { font-size: 1.625rem; }
+.t-sm    { font-size: 1.375rem; color: var(--text-dim); }
+.t-xs    { font-size: 1.125rem; color: var(--text-mute); }
+
+.c-dim   { color: var(--text-dim); }
+.c-mute  { color: var(--text-mute); }
+.c-accent{ color: var(--accent); }
+.c-danger{ color: var(--danger); }
+.c-gold  { color: var(--gold); }

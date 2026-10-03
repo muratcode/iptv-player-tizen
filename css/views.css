@@ -1,0 +1,425 @@
+/* ============================================================
+   views.css - Ekrana ozel duzenler
+   ============================================================ */
+
+/* ---------------- GIRIS (LOGIN) ----------------
+   Kart iki kolonludur: solda marka + aciklamalar, sagda form.
+   Onceki tek kolonlu kart ~1200 px yuksekligindeydi; 1080 px ekrana
+   sigmiyor, ustu ve "Baglan" butonu kesiliyordu.
+   Yine de sigmazsa (cok uzun ipucu vb.) .login kaydirilabilir; odak
+   kaydirmasini Nav.ensureVisible yapar. margin:auto, kart sigdiginda
+   ortalar, sigmadiginda ustten baslatir (justify-content:center'in
+   aksine ust kismi erisilemez hale getirmez). */
+.login {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    display: flex;
+    padding: var(--safe-y) var(--safe-x) calc(var(--safe-y) + 2rem);
+    overflow-y: auto; overflow-x: hidden;
+}
+.login::-webkit-scrollbar { width: 0; height: 0; }
+.login__card {
+    margin: auto;
+    width: 62rem; max-width: 100%;
+    padding: 3rem 3.5rem;
+    background: rgba(18, 24, 36, .92);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    box-shadow: 0 2rem 6rem rgba(0,0,0,.6);
+}
+.login__card--split {
+    width: 104rem;
+    display: flex; gap: 3.5rem;
+    padding: 2.75rem 3.25rem;
+}
+.login__aside { flex: 0 0 34rem; min-width: 0; display: flex; flex-direction: column; }
+.login__main  { flex: 1 1 auto; min-width: 0; }
+.login__aside .login__sub { margin-bottom: 1.25rem; }
+.login__tip {
+    font-size: 1.25rem; line-height: 1.45; color: var(--gold);
+    padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+    background: rgba(255,194,71,.08);
+    border-left: .3rem solid var(--gold);
+    border-radius: .5rem;
+}
+.login__tip--info {
+    color: var(--text-dim);
+    background: rgba(46,197,255,.07);
+    border-left-color: var(--accent);
+}
+.login__note { font-size: 1.125rem; color: var(--text-mute); margin-top: auto; padding-top: 1rem; }
+/* Formda alanlar biraz daha siki: iki kolonda bile 1080 px'e rahat sigsin */
+.login__main .field { margin-bottom: 1.15rem; }
+.login__main .field__box { min-height: 4.25rem; }
+.login__main .tabs { margin-bottom: 1.5rem; }
+.login__brand { display: flex; align-items: center; gap: 1rem; margin-bottom: .5rem; }
+.login__logo {
+    position: relative;
+    width: 4.5rem; height: 4.5rem; border-radius: 1rem;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #04121c; font-weight: 800;
+    overflow: hidden;
+}
+/* Gercek uygulama ikonu degradenin uzerini orter; yuklenemezse degrade kalir */
+.login__logo-img {
+    position: absolute; left: 0; top: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+.login__sub { font-size: 1.375rem; color: var(--text-mute); margin-bottom: 2rem; }
+.login__pane { display: none; }
+.login__pane.is-active { display: block; }
+.login__actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+.login__actions .btn { flex: 1 1 0; }
+/* "Sifreyi goster" satiri ve dil secici: form alanlariyla ayni genislikte */
+.login__toggle { justify-content: flex-start !important; min-height: 3.5rem; margin-bottom: .25rem; }
+.login__main .srow { min-height: 4.5rem; margin: 1rem 0 0; }
+
+/* ---------------- ANA EKRAN (HOME) ---------------- */
+.home__hero { margin-bottom: 2.5rem; }
+.home__hello { font-size: 3.25rem; font-weight: 700; letter-spacing: -.02em; }
+.home__acct  { font-size: 1.375rem; color: var(--text-mute); margin-top: .5rem; }
+
+/* 4 sutun, kullanilabilir genisligi TAM doldurur (onceden sabit 26rem
+   genislikti ve sagda bos bir serit kaliyordu). */
+.home__cards { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+.hcard {
+    position: relative;
+    width: calc((100% - 4.5rem) / 4); height: 16.5rem;
+    padding: 1.75rem;
+    background: linear-gradient(160deg, var(--surface-2), var(--surface));
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    overflow: hidden;
+}
+.hcard.is-focused { transform: scale(1.04); }
+.hcard__glyph {
+    position: absolute; right: 1.25rem; top: .5rem;
+    font-size: 6.5rem; opacity: .16;
+}
+.hcard__title { font-size: 2.25rem; font-weight: 700; }
+.hcard__desc  { font-size: 1.25rem; color: var(--text-mute); margin-top: .35rem; }
+.hcard__count { position: absolute; left: 1.75rem; top: 1.5rem; }
+
+/* ---------------- CANLI TV ---------------- */
+/* Sag panel: EPG / onizleme */
+.side { position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 1.25rem; overflow: hidden; }
+.side__logo {
+    width: 100%; height: 9rem;
+    background: rgba(255,255,255,.05); border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1rem; overflow: hidden;
+}
+.side__logo img { max-width: 80%; max-height: 80%; object-fit: contain; }
+.side__name { font-size: 1.875rem; font-weight: 700; margin-bottom: .25rem; }
+.side__cat  { font-size: 1.125rem; color: var(--text-mute); margin-bottom: 1.25rem; }
+.side__sec  { font-size: 1.125rem; color: var(--accent); text-transform: uppercase;
+              letter-spacing: .08em; margin: 1.25rem 0 .5rem; font-weight: 700; }
+.side__prog { font-size: 1.5rem; font-weight: 600; }
+.side__time { font-size: 1.125rem; color: var(--text-mute); margin-top: .15rem; }
+.side__desc { font-size: 1.125rem; color: var(--text-dim); margin-top: .5rem; }
+.side__next { font-size: 1.375rem; color: var(--text-dim); }
+.side__prog-bar { margin-top: .75rem; }
+
+/* ---------------- FILM / DIZI IZGARA ---------------- */
+.grid { position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden; }
+.grid__viewport { position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden; }
+.grid__canvas { position: relative; width: 100%; }
+
+/* ---------------- DIZI DETAY ---------------- */
+.sdet { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; gap: 2rem; }
+.sdet__poster {
+    flex: 0 0 24rem;
+    height: 34rem;
+    background: var(--surface); border-radius: var(--radius-lg);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.sdet__poster img { width: 100%; height: 100%; object-fit: cover; }
+.sdet__info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.sdet__title { font-size: 2.75rem; font-weight: 700; }
+.sdet__meta  { font-size: 1.25rem; color: var(--text-mute); margin: .5rem 0 1rem; }
+.sdet__plot  { font-size: 1.25rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+.sdet__seasons { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.season-chip {
+    min-width: 8rem; min-height: 3.25rem; padding: 0 1.25rem;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-2); border: 2px solid var(--border);
+    border-radius: var(--radius); font-size: 1.375rem; font-weight: 600;
+}
+.season-chip.is-selected { background: var(--accent-soft); border-color: var(--accent); }
+.sdet__eps { position: relative; flex: 1 1 auto; min-height: 0; }
+
+/* ---------------- ARAMA ---------------- */
+.search__bar { display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: flex-end; }
+.search__bar .field { flex: 1 1 auto; margin-bottom: 0; }
+.search__scope { display: flex; gap: .75rem; }
+.scope-chip {
+    min-width: 9rem; min-height: 4.5rem; padding: 0 1.25rem;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius); font-size: 1.375rem;
+}
+.scope-chip.is-selected { background: var(--accent-soft); border-color: var(--accent); }
+.search__results { position: absolute; left: 0; right: 0; top: 8.5rem; bottom: 0; }
+
+/* ---------------- AYARLAR ---------------- */
+.settings { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; gap: 2rem; }
+/* position:relative SARTTIR: sanal listenin satirlari mutlak konumludur.
+   Onceden konumlandirilmamisti; satirlar tum ekran genisligine yayilip
+   sag paneli ortuyor, paneldeki yazilar satir aralarindan tasiyordu. */
+.settings__list { position: relative; flex: 0 0 52rem; overflow: hidden; }
+.settings__side { flex: 1 1 auto; min-width: 0; padding: 1.5rem 1.75rem;
+                  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+                  border-radius: var(--radius-lg); overflow: hidden; }
+.settings__side .col__head { height: auto; margin-bottom: .75rem; color: var(--text); letter-spacing: .04em; }
+.settings__help { font-size: 1.3125rem; color: var(--text-dim); white-space: pre-line;
+                  line-height: 1.45; margin-bottom: 1.5rem; }
+.srow {
+    display: flex; align-items: center; gap: 1.25rem;
+    min-height: 5.25rem; padding: 0 1.5rem; margin-bottom: .75rem;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius);
+}
+/* Ayar satirlari da sanal liste icinde -> kirpilmayan inset odak */
+.srow.is-focused {
+    background: var(--focus-fill);
+    box-shadow: var(--focus-inset);
+    border-color: transparent !important;
+}
+.srow.is-focused .srow__title { color: #fff; }
+.srow.is-focused .srow__desc { color: var(--text-dim); }
+.srow__glyph { flex: 0 0 3rem; font-size: 2rem; text-align: center; }
+.srow__text  { flex: 1 1 auto; min-width: 0; }
+.srow__title { font-size: 1.625rem; font-weight: 600; }
+.srow__desc  { font-size: 1.125rem; color: var(--text-mute); }
+.srow__value { flex: 0 0 auto; font-size: 1.375rem; color: var(--accent); font-weight: 600; }
+.info-row { display: flex; justify-content: space-between; gap: 1rem;
+            padding: .55rem 0; border-bottom: 1px solid var(--border); font-size: 1.25rem; }
+.info-row__k { flex: 0 0 auto; color: var(--text-mute); }
+.info-row__v { min-width: 0; color: var(--text); text-align: right;
+               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------- OYNATICI (PLAYER) ---------------- */
+.player { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: transparent; }
+
+/* Ust bilgi seridi */
+.osd {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    opacity: 0; transition: opacity var(--t-med) ease;
+    pointer-events: none;
+}
+.osd.is-visible { opacity: 1; }
+.osd__top {
+    position: absolute; left: 0; right: 0; top: 0;
+    padding: var(--safe-y) var(--safe-x) 4rem;
+    background: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,0));
+    display: flex; align-items: flex-start; gap: 1.5rem;
+}
+.osd__logo {
+    flex: 0 0 8rem; height: 5rem;
+    background: rgba(255,255,255,.08); border-radius: .6rem;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.osd__logo img { max-width: 90%; max-height: 90%; object-fit: contain; }
+.osd__head { flex: 1 1 auto; min-width: 0; }
+.osd__num  { font-size: 1.5rem; color: var(--accent); font-weight: 700; }
+.osd__name { font-size: 2.75rem; font-weight: 700; }
+.osd__now  { font-size: 1.5rem; color: var(--text-dim); margin-top: .35rem; }
+.osd__next { font-size: 1.25rem; color: var(--text-mute); margin-top: .15rem; }
+.osd__badges { flex: 0 0 auto; display: flex; gap: .75rem; align-items: center; }
+
+.osd__bottom {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 4rem var(--safe-x) var(--safe-y);
+    background: linear-gradient(0deg, rgba(0,0,0,.85), rgba(0,0,0,0));
+}
+.osd__times { display: flex; justify-content: space-between; font-size: 1.25rem;
+              color: var(--text-dim); margin-top: .5rem; font-variant-numeric: tabular-nums; }
+.osd__hints { display: flex; gap: 2rem; margin-top: 1rem; font-size: 1.125rem; color: var(--text-mute); }
+
+/* Merkezdeki durum gostergesi (buffering / hata) */
+.pstate {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1.25rem;
+}
+.pstate__box {
+    padding: 2.5rem 3rem;
+    background: rgba(8, 12, 20, .92);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    text-align: center; max-width: 60rem;
+}
+/* Yayin acilirken: ortada spinner + mesaj + icerik adi, okunakli zemin */
+.pstate__load {
+    display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+    padding: 2.25rem 3rem;
+    background: rgba(6, 9, 15, .72);
+    border-radius: var(--radius-lg);
+    max-width: 60rem; text-align: center;
+}
+/* Sarma sonrasi kisa bekleme: kucuk, goruntuyu kapatmayan gosterge */
+.pstate__wait {
+    display: flex; align-items: center; gap: 1rem;
+    margin-top: 10rem;           /* ortadaki sarma gostergesinin (.seekpv) altinda */
+    padding: .9rem 1.6rem;
+    background: rgba(6, 9, 15, .78);
+    border-radius: 2rem;
+}
+.pstate__wait .loading__msg { font-size: 1.375rem; }
+.pstate__title { font-size: 2rem; font-weight: 700; margin-bottom: .75rem; }
+.pstate__msg   { font-size: 1.375rem; color: var(--text-dim); margin-bottom: 1.75rem; white-space: pre-line; }
+.pstate__btns  { display: flex; gap: 1rem; justify-content: center; }
+
+/* Oynatici icindeki hizli kanal listesi */
+.zap {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 46rem;
+    background: linear-gradient(90deg, rgba(6,9,15,.97) 70%, rgba(6,9,15,0));
+    padding: var(--safe-y) 2rem var(--safe-y) var(--safe-x);
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    transition: transform var(--t-med) ease;
+}
+.zap.is-open { -webkit-transform: translateX(0); transform: translateX(0); }
+.zap__head { font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; }
+.zap__body { position: absolute; left: var(--safe-x); right: 2rem; top: calc(var(--safe-y) + 3.5rem); bottom: var(--safe-y); }
+
+/* Kanal numarasi ile hizli gecis kutusu */
+.numpad {
+    position: absolute; right: var(--safe-x); top: var(--safe-y);
+    padding: 1rem 2rem;
+    background: rgba(0,0,0,.8); border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    font-size: 3rem; font-weight: 700; letter-spacing: .15em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- PLAYLISTLER / QR ---------------- */
+.qr-box { margin-top: 1.5rem; }
+.qr-box__code {
+    display: inline-block;
+    padding: .75rem;
+    background: #fff;
+    border-radius: .6rem;
+    margin-bottom: .75rem;
+}
+.qr-box__code canvas { display: block; }
+
+/* ---------------- OYNATICI: ALTYAZI ----------------
+   AVPlay altyaziyi video katmanina KENDISI CIZMEZ; metni
+   onsubtitlechange olayiyla uygulamaya verir ve cizmek bize kalir.
+   Bu katman o metni gosterir. */
+.subtitle {
+    position: absolute;
+    left: 12%; right: 12%;
+    bottom: calc(var(--safe-y) + 2rem);
+    text-align: center;
+    pointer-events: none;
+    display: none;
+    /* Bilgi seridi acilip kapaninca altyazi ZIPLAMAZ, kayar.
+       (transform GPU'da calisir, yerlesim hesabi tetiklemez) */
+    -webkit-transition: -webkit-transform 260ms ease;
+    transition: transform 260ms ease;
+}
+.subtitle.is-visible { display: block; }
+.subtitle__text {
+    display: inline-block;
+    padding: .35rem 1.25rem;
+    background: rgba(0, 0, 0, .55);
+    border-radius: .5rem;
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #fff;
+    white-space: pre-line;
+    /* TV'de parlak sahnelerde de okunabilsin diye kalin kontur */
+    text-shadow:
+        -2px -2px 0 #000,  2px -2px 0 #000,
+        -2px  2px 0 #000,  2px  2px 0 #000,
+         0   -2px 0 #000,  0    2px 0 #000,
+        -2px  0   0 #000,  2px  0   0 #000;
+}
+/* Bilgi seridi acikken altyazi, alt seridin (ilerleme cubugu + ipuclari)
+   USTUNE kayar. Onceden "bottom" degeri 8% -> 16% aniden degisiyordu;
+   altyazi indirildikten sonra her tus basisinda yazi birden yukari
+   firliyordu. Artik yumusak bir gecisle yer degistirir. */
+.osd.is-visible ~ .subtitle {
+    -webkit-transform: translateY(-6.5rem);
+    transform: translateY(-6.5rem);
+}
+
+/* ---------------- OYNATICI: SONRAKI BOLUM / INTRO / SARMA ---------------- */
+
+/* Netflix tarzi "sonraki bolum" karti - sag alt kose */
+.nextup {
+    position: absolute;
+    right: var(--safe-x);
+    bottom: calc(var(--safe-y) + 7rem);
+    width: 38rem;
+    padding: 1.5rem 1.75rem;
+    background: rgba(8, 12, 20, .95);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1.5rem 4rem rgba(0,0,0,.75);
+    opacity: 0;
+    -webkit-transform: translateY(1.5rem);
+    transform: translateY(1.5rem);
+    transition: opacity var(--t-med) ease, transform var(--t-med) ease;
+    pointer-events: none;
+}
+.nextup.is-visible {
+    opacity: 1;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+}
+.nextup__label {
+    font-size: 1.125rem; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: .35rem;
+}
+.nextup__name { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+.nextup__cd   { font-size: 1.25rem; color: var(--text-dim); margin-top: .75rem; }
+
+/* "Intro'yu Atla" onerisi - sag alt */
+.introskip {
+    position: absolute;
+    right: var(--safe-x);
+    bottom: calc(var(--safe-y) + 1rem);
+    display: flex; align-items: center;
+    padding: 1rem 1.5rem;
+    background: rgba(8, 12, 20, .9);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-size: 1.5rem; font-weight: 600;
+    opacity: 0;
+    transition: opacity var(--t-med) ease;
+    pointer-events: none;
+}
+.introskip.is-visible { opacity: 1; }
+.introskip__key {
+    display: inline-block;
+    min-width: 3rem; padding: .1rem .6rem;
+    text-align: center;
+    background: var(--accent); color: #04121c;
+    border-radius: .35rem;
+    font-size: 1.25rem; font-weight: 800;
+}
+
+/* Hizlanan sarma gostergesi - ekran ortasi */
+.seekpv {
+    position: absolute;
+    left: 50%; top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    padding: 1.25rem 2.5rem;
+    background: rgba(8, 12, 20, .88);
+    border: 2px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    font-size: 2.5rem; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    transition: opacity var(--t-fast) ease;
+    pointer-events: none;
+}
+.seekpv.is-visible { opacity: 1; }

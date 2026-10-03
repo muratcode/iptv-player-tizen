@@ -1,0 +1,41 @@
+# Tizen / IDE çıktıları (Debug/ projenin tam kopyasını, görseller dahil, içerir)
+Debug/
+Release/
+.buildResult/
+.tizen-rds/
+.rds_delta
+.sdk_delta.info
+.settings/
+.project
+.tproject
+*.wgt
+
+# Yalnızca testler için kullanılan Node bağımlılıkları
+node_modules/
+package-lock.json
+tests/package.json
+
+# Kişisel görseller — repoya dahil edilmez, herkes kendi görselini ekler
+/icon.png
+/assets/icon.png
+/assets/splash.jpg
+/_kaynak/
+
+# Kişisel IPTV hesabınız (link + şifre) — her build'e girer ama repoya girmez
+hesaplar.txt
+
+# İmzalama sertifikaları ve anahtarlar — asla commit etmeyin
+*.p12
+*.pwd
+*.pri
+*.csr
+author.crt
+distributor.crt
+device-profile.xml
+sdbkey
+sdbkey.pub
+
+# İşletim sistemi / editör
+Thumbs.db
+.DS_Store
+.vscode/

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>IPTV Player</title>
+
+    <!-- TV'de sayfa daima 1920x1080 mantiksal cozunurlukte render edilir.
+         4K panellerde Tizen bu yuzeyi donanimsal olarak 3840x2160'a olceklerdir. -->
+    <meta name="viewport" content="width=1920, initial-scale=1, user-scalable=no">
+
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/views.css">
+</head>
+<body>
+
+<!--
+  AVPlay video duzlemi.
+  Tizen'de webapis.avplay donanim video katmanina cizer. Bu <object> elemani
+  o katmanin sayfadaki yerini tanimlar ve MUTLAKA DOM'da bulunmalidir.
+  Video, HTML icerigin ARKASINDA gorunur; bu yuzden oynatma sirasinda
+  <body class="player-active"> ile arka planlari seffaf yapiyoruz.
+-->
+<object id="av-player" type="application/avplayer"></object>
+
+<!-- webapis.avplay kullanilmadigi (PC tarayici) durumlar icin fallback oynatici -->
+<video id="html5-player" playsinline></video>
+
+<!--
+  ACILIS GORSELI (splash)
+  JS ile degil, DOGRUDAN HTML'de duruyor: boylece sayfa ilk boyanir
+  boyanmaz gorunur, betikler yuklenmesini beklemez. Uygulama arka planda
+  normal sekilde acilir; gorsel suresi dolunca yumusak bir gecisle
+  kaldirilir ve DOM'dan SILINIR (1920x1080 cozulmus goruntu ~8 MB RAM
+  tutar; televizyonda bunu geri vermek onemlidir).
+  Degistirmek icin: assets/splash.jpg dosyasini kendi gorselinizle degistirin.
+-->
+<div id="splash" class="splash">
+    <img id="splash-img" class="splash__img" src="assets/splash.jpg" alt="">
+</div>
+
+<!-- Tum ekranlarin (view) mount edildigi kok konteyner -->
+<div id="app" class="app"></div>
+
+<!-- Modal / toast / yukleniyor katmani -->
+<div id="overlay-root" class="overlay-root"></div>
+
+<!-- ==========================================================
+     Samsung TV Web API'leri.
+     Bu dosya TV firmware'i tarafindan calisma aninda saglanir
+     ($WEBAPIS bir Tizen ic degiskenidir). PC tarayicisinda 404
+     dondugu icin zararsizca yok sayilir; kod webapis yoksa
+     otomatik HTML5 <video> moduna duser.
+     ========================================================== -->
+<script src="$WEBAPIS/webapis/webapis.js"></script>
+
+<!-- ---------- CORE ---------- -->
+<script src="js/core/polyfill.js"></script>
+<script src="js/core/utils.js"></script>
+<script src="js/core/logger.js"></script>
+<script src="js/core/errors.js"></script>
+<script src="js/core/events.js"></script>
+<script src="js/core/storage.js"></script>
+<script src="js/core/settings.js"></script>
+<script src="js/core/cache.js"></script>
+<script src="js/core/bigstore.js"></script>
+<script src="js/core/http.js"></script>
+<script src="js/core/keys.js"></script>
+<script src="js/core/nav.js"></script>
+<script src="js/core/router.js"></script>
+<script src="js/core/actions.js"></script>
+
+<!-- ---------- UI ---------- -->
+<script src="js/ui/loading.js"></script>
+<script src="js/ui/toast.js"></script>
+<script src="js/ui/modal.js"></script>
+<script src="js/ui/field.js"></script>
+<script src="js/ui/imageLoader.js"></script>
+<script src="js/ui/virtualList.js"></script>
+<script src="js/ui/qrcode.js"></script>
+
+<!-- ---------- SERVICES ---------- -->
+<script src="services/profile.js"></script>
+<script src="services/xtream.js"></script>
+<script src="services/m3u.js"></script>
+<script src="services/epg.js"></script>
+<script src="services/content.js"></script>
+<script src="services/favorites.js"></script>
+<script src="services/history.js"></script>
+<script src="services/backup.js"></script>
+<script src="services/presets.js"></script>
+<script src="services/subtitles.js"></script>
+<script src="services/opensubtitles.js"></script>
+
+<!-- ---------- PLAYER ---------- -->
+<script src="player/avplay.js"></script>
+<script src="player/html5.js"></script>
+<script src="player/controller.js"></script>
+
+<!-- ---------- VIEWS ---------- -->
+<script src="views/login.js"></script>
+<script src="views/playlists.js"></script>
+<script src="views/home.js"></script>
+<script src="views/live.js"></script>
+<script src="views/movies.js"></script>
+<script src="views/series.js"></script>
+<script src="views/seriesDetail.js"></script>
+<script src="views/favorites.js"></script>
+<script src="views/recent.js"></script>
+<script src="views/search.js"></script>
+<script src="views/opensubtitles.js"></script>
+<script src="views/settings.js"></script>
+<script src="views/player.js"></script>
+
+<!-- ---------- BOOTSTRAP ---------- -->
+<script src="js/app.js"></script>
+</body>
+</html>

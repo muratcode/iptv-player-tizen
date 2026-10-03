@@ -1,0 +1,374 @@
+/* ============================================================
+   components.css - Yeniden kullanilabilir TV bilesenleri
+   ODAK (FOCUS) KURALI: kumandayla secili oge daima .is-focused
+   sinifini alir. Gercek DOM focus'u yalnizca <input> icin kullanilir
+   (TV sanal klavyesinin acilmasi buna baglidir).
+   ============================================================ */
+
+/* ---------------- Odak gorunumu ---------------- */
+/* PERFORMANS: box-shadow ANIMASYONU televizyon GPU'sunda cok pahalidir
+   (her karede yeniden bulaniklastirma). Yalnizca transform ve arka plan
+   gecisli tutuluyor; odak halkasi aninda belirir. */
+[data-focusable] {
+    transition: transform var(--t-fast) ease, background-color var(--t-fast) ease;
+}
+/* Sanal listede geri donusumlu satirlarda gecis OLMAMALI: bir satir baska bir
+   icerige donustugunde eski renkten yenisine animasyon yapmasi titreme yaratir. */
+.list__item, .grid__item, .srow { transition: none !important; }
+[data-focusable].is-focused {
+    box-shadow: var(--focus-glow);
+    border-color: var(--focus-ring) !important;
+    background-color: var(--accent-soft);
+    z-index: 5;
+}
+
+/* ---------------- Buton ---------------- */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .75rem;
+    min-height: 4rem;
+    padding: 0 2rem;
+    background: var(--surface-2);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1.625rem; font-weight: 600;
+    color: var(--text);
+}
+.btn--primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #04121c; border-color: transparent; }
+.btn--danger  { background: rgba(255,90,95,.16); border-color: rgba(255,90,95,.4); color: #ffd4d6; }
+.btn--ghost   { background: transparent; }
+.btn--block   { width: 100%; }
+.btn.is-focused { transform: scale(1.03); }
+
+/* ---------------- Form / giris alanlari ---------------- */
+.field { margin-bottom: 1.5rem; }
+.field__label {
+    display: block; margin-bottom: .5rem;
+    font-size: 1.25rem; font-weight: 600; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--text-mute);
+}
+.field__box {
+    position: relative;
+    display: flex; align-items: center;
+    min-height: 4.5rem;
+    padding: 0 1.25rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+}
+.field__box.is-focused { background: var(--accent-soft); }
+.field__input {
+    flex: 1 1 auto; min-width: 0;
+    background: transparent; border: 0; outline: none;
+    color: var(--text);
+    font-size: 1.625rem;
+    padding: .75rem 0;
+}
+.field__input::-webkit-input-placeholder { color: var(--text-mute); }
+
+/* TV sanal klavyesi (IME) acikken alani altin renkle vurgula */
+.field__box.is-editing { border-color: var(--gold) !important; box-shadow: 0 0 0 .2rem rgba(255,194,71,.6); }
+.field__hint { margin-top: .4rem; font-size: 1.125rem; color: var(--text-mute); }
+.field__eye { flex: 0 0 auto; padding: 0 .5rem; font-size: 1.25rem; color: var(--text-dim); }
+
+/* Sekmeler (Xtream / M3U) */
+.tabs { display: flex; gap: 1rem; margin-bottom: 2rem; }
+.tab {
+    flex: 1 1 0;
+    min-height: 3.75rem;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1.5rem; font-weight: 600; color: var(--text-dim);
+}
+.tab.is-selected { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+
+/* ---------------- Sanal liste (kategori / kanal) ----------------
+   .list sinifi liste KAPSAYICISINA eklenir (ornek .col__body). Burada
+   KONUM VERILMEZ: onceden "top:0" yaziyordu ve bu dosya layout.css'ten
+   sonra yuklendigi icin .col__body'nin "top" degerini eziyor, liste
+   kolon basliginin USTUNE biniyordu ("KATEGORILER" yazisi ilk satirla
+   ust uste). Kapsayici kendi konumunu belirler. */
+.list { overflow: hidden; }
+.list__viewport { position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden; }
+.list__canvas { position: relative; width: 100%; }
+.list__item {
+    position: absolute; left: .5rem; right: .5rem;
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0 1rem;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+}
+/* Odak: ICE dogru halka -> overflow:hidden kapsayicisi tarafindan KIRPILAMAZ.
+   (Onceki disa dogru golge liste kenarlarinda kesiliyordu.) */
+.list__item.is-focused {
+    background: var(--focus-fill);
+    box-shadow: var(--focus-inset);
+    border-color: transparent !important;
+}
+/* Odakta yalnizca RENK degisir. Kalinlik (font-weight) degisimi metni
+   yeniden kirdiriyor, secili satirdaki yazi saga sola kipirdiyordu. */
+.list__item.is-focused .ch__name,
+.list__item.is-focused .cat__name { color: #fff; }
+.list__item.is-focused .ch__epg,
+.list__item.is-focused .cat__count,
+.list__item.is-focused .ch__num { color: var(--text-dim); }
+.list__item.is-current { background: rgba(255,255,255,.06); }
+.list__item.is-current::before {
+    content: ""; position: absolute; left: 0; top: 18%; bottom: 18%;
+    width: .3rem; background: var(--accent); border-radius: .3rem;
+}
+
+/* Kategori satiri */
+.cat__name { flex: 1 1 auto; min-width: 0; font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat__count { flex: 0 0 auto; font-size: 1.125rem; color: var(--text-mute); }
+
+/* Kanal satiri */
+.ch__num {
+    flex: 0 0 4rem; text-align: right;
+    font-size: 1.375rem; color: var(--text-mute);
+    font-variant-numeric: tabular-nums;
+}
+.ch__logo {
+    flex: 0 0 5.5rem; height: 3.5rem;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,.05); border-radius: .4rem;
+    overflow: hidden;
+}
+.ch__logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.ch__fallback { font-size: 1.25rem; font-weight: 700; color: var(--text-mute); }
+.ch__texts { flex: 1 1 auto; min-width: 0; }
+.ch__name { font-size: 1.5rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch__epg  { font-size: 1.125rem; color: var(--text-mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch__fav  { flex: 0 0 2rem; font-size: 1.5rem; color: var(--gold); text-align: center; }
+
+/* ---------------- Poster izgara (Film / Dizi) ---------------- */
+.grid__item {
+    position: absolute;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+}
+/* ODAK HALKASI AFISIN USTUNDE CIZILIR.
+   Onceden ogenin kendi "inset box-shadow"u kullaniliyordu; ancak inset
+   golge cocuk ogelerin ALTINDA boyanir ve afis gorseli kutuyu tamamen
+   kapladigi icin halka yalnizca baslik bandinda gorunuyordu (secili
+   afis neredeyse belli olmuyordu). ::after katmani gorselin uzerindedir. */
+.grid__item::after {
+    content: "";
+    position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 .3rem var(--focus-ring);
+    opacity: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+.grid__item.is-focused { background: var(--surface-3); }
+.grid__item.is-focused::after { opacity: 1; }
+.grid__item.is-focused .poster__cap { color: #fff; background: rgba(46,197,255,.18); }
+.poster { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
+.poster__img {
+    flex: 1 1 auto; min-height: 0;
+    background: linear-gradient(160deg, var(--surface-2), var(--surface));
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.poster__img img { width: 100%; height: 100%; object-fit: cover; }
+.poster__ph { font-size: 2.5rem; color: var(--text-mute); }
+/* Gorsel yuklenemedigi zaman gosterilen yer tutucu, afis kutusunda buyuk olsun */
+.poster__img .ch__fallback { font-size: 2.5rem; }
+.side__logo .ch__fallback,
+.osd__logo .ch__fallback { font-size: 2rem; }
+.poster__cap {
+    flex: 0 0 auto;
+    padding: .4rem .7rem .35rem;
+    font-size: 1.125rem; line-height: 1.2;
+    height: 3.5rem;
+    overflow: hidden;
+    color: var(--text-dim);
+}
+.poster__badge {
+    position: absolute; top: .5rem; right: .5rem;
+    padding: .1rem .5rem; border-radius: .35rem;
+    background: rgba(0,0,0,.7); font-size: 1rem; color: var(--gold);
+}
+
+/* ---------------- Bos durum / hata kutusu ---------------- */
+.empty {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; padding: 2rem; text-align: center;
+}
+.empty__icon  { font-size: 4.5rem; opacity: .5; }
+.empty__title { font-size: 1.875rem; font-weight: 600; }
+.empty__desc  { font-size: 1.375rem; color: var(--text-mute); max-width: 40rem; }
+
+/* ---------------- Overlay katmani ---------------- */
+.overlay-root {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    z-index: 100; pointer-events: none;
+}
+
+/* Yukleniyor */
+.loading {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    background: var(--overlay);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
+}
+.spinner {
+    width: 5rem; height: 5rem;
+    border: .4rem solid rgba(255,255,255,.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    -webkit-animation: spin .9s linear infinite;
+    animation: spin .9s linear infinite;
+}
+.spinner--sm { width: 2.5rem; height: 2.5rem; border-width: .25rem; }
+@-webkit-keyframes spin { to { -webkit-transform: rotate(360deg); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading__msg { font-size: 1.75rem; color: var(--text-dim); }
+.loading__sub { font-size: 1.25rem; color: var(--text-mute); }
+
+/* Modal
+   ODAK: Modal ogeleri #overlay-root icindedir ve Nav taramasina girmemeleri
+   icin [data-focusable] TASIMAZLAR. Bu yuzden genel odak kurali onlara
+   uygulanmaz ve stilleri BURADA acikca tanimlanmalidir. (Tanimlanmadigi
+   surece kumandanin hangi satirda oldugu ekranda hic gorunmez.) */
+.modal__opt.is-focused {
+    background: var(--focus-fill);
+    box-shadow: var(--focus-inset);
+    border-color: var(--focus-ring) !important;
+}
+.modal__opt.is-focused .modal__opt-label { color: #fff; }
+
+/* Su an ETKIN olan secenek (odaktan bagimsiz): sol kenarda serit */
+.modal__opt.is-current {
+    background: rgba(255,255,255,.06);
+    border-color: var(--border-strong);
+}
+.modal__opt.is-current::before {
+    content: ""; position: absolute; left: 0; top: 15%; bottom: 15%;
+    width: .3rem; background: var(--accent); border-radius: .3rem;
+}
+
+.modal__btns .btn.is-focused {
+    box-shadow: var(--focus-glow);
+    border-color: var(--focus-ring) !important;
+    transform: scale(1.03);
+}
+
+/* Cok sayida ses/altyazi parcasi olabilir -> liste kaydirilabilir olmali.
+   Kaydirma kumandayla (modal.js ensureVisible) yapilir; TV'de kayan cubuk
+   gorunmesin diye gizleniyor.
+   position:relative SARTTIR: satirlarin offsetTop degeri bu listeye gore
+   olculur. Onceden konumlandirilmamisti; olcum arka plan katmanina gore
+   yapiliyor, asagi inildikce liste bir anda yukari firliyor ve secili
+   satir ustten kesiliyordu (altyazi arama sonuclarinda gorulen hata). */
+.modal__list {
+    position: relative;
+    max-height: 30rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.modal__list::-webkit-scrollbar { width: 0; height: 0; }
+/* Listenin devami oldugunu belirten yumusak kenar golgeleri */
+.modal__list.has-more-below { box-shadow: inset 0 -2.5rem 2rem -2rem rgba(0,0,0,.7); }
+.modal__list.has-more-above { box-shadow: inset 0 2.5rem 2rem -2rem rgba(0,0,0,.7); }
+.modal__list.has-more-above.has-more-below {
+    box-shadow: inset 0 2.5rem 2rem -2rem rgba(0,0,0,.7), inset 0 -2.5rem 2rem -2rem rgba(0,0,0,.7);
+}
+.modal__count { font-size: 1.125rem; color: var(--text-mute); margin-top: .75rem; text-align: right; }
+
+.modal-back {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    background: var(--overlay);
+    display: flex; align-items: center; justify-content: center;
+}
+.modal {
+    width: 58rem; max-width: 80%;
+    max-height: calc(100% - 2 * var(--safe-y));
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: 0 2rem 5rem rgba(0,0,0,.7);
+}
+.modal__title { font-size: 2.25rem; font-weight: 700; margin-bottom: 1rem;
+                overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal__msg   { font-size: 1.5rem; color: var(--text-dim); margin-bottom: 2rem; white-space: pre-line;
+                max-height: 22rem; overflow: hidden; }
+.modal__btns  { display: flex; gap: 1rem; }
+.modal__btns .btn { flex: 1 1 0; }
+.modal__opt {
+    position: relative;
+    display: flex; align-items: center; gap: 1rem;
+    min-height: 3.75rem; padding: 0 1.25rem;
+    border: 2px solid var(--border); border-radius: var(--radius);
+    margin-bottom: .75rem; font-size: 1.5rem;
+}
+.modal__opt:last-child { margin-bottom: 0; }
+.modal__opt-icon  { flex: 0 0 2.5rem; text-align: center; font-size: 1.5rem; }
+.modal__opt-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal__opt-hint  { flex: 0 0 auto; font-size: 1.125rem; color: var(--accent); font-weight: 600; }
+
+/* Toast */
+.toast-wrap {
+    position: absolute; right: var(--safe-x); bottom: var(--safe-y);
+    display: flex; flex-direction: column; align-items: flex-end; gap: .75rem;
+}
+.toast {
+    max-width: 46rem;
+    padding: 1rem 1.5rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-left: .35rem solid var(--accent);
+    border-radius: var(--radius);
+    font-size: 1.375rem;
+    box-shadow: 0 1rem 2.5rem rgba(0,0,0,.6);
+}
+.toast--error   { border-left-color: var(--danger); }
+.toast--success { border-left-color: var(--success); }
+.toast--warn    { border-left-color: var(--warn); }
+/* Oynaticida sag alt kose "Intro'yu Atla" / "Sonraki bolum" kartlarina ve
+   bilgi seridine aittir; bildirimler orada bu ogelerin ustune biniyordu.
+   Oynatma sirasinda sag uste alinir. */
+body.player-active .toast-wrap {
+    bottom: auto;
+    top: calc(var(--safe-y) + 7.5rem);
+}
+
+/* Rozet */
+.badge {
+    display: inline-block; padding: .15rem .6rem;
+    border-radius: .4rem; font-size: 1.125rem; font-weight: 600;
+    background: rgba(255,255,255,.1); color: var(--text-dim);
+}
+.badge--live { background: rgba(255,90,95,.2); color: #ff8b8f; }
+.badge--ok   { background: rgba(55,214,122,.16); color: #7ef0ab; }
+
+/* Ilerleme cubugu */
+.pbar { height: .4rem; background: rgba(255,255,255,.14); border-radius: .2rem; overflow: hidden; }
+.pbar__fill { height: 100%; background: var(--accent); width: 0; }
+
+/* ---------------- Sanal liste kapsayicisi ----------------
+   Kapsayici [data-focusable] olur (Nav odagi buraya gelir) ama
+   parlama efekti kapsayicida degil, ICERIDEKI satirda gorunmelidir. */
+[data-focusable].list.is-focused,
+[data-focusable].grid.is-focused,
+.vl-host.is-focused {
+    box-shadow: none !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+/* Panel seklindeki listeler odaktayken KAYBOLMAZ (onceden cercevesi ve
+   zemini siliniyordu; odak kolonlar arasinda gezerken panel bir gorunup
+   bir kayboluyordu). Bunun yerine hangi kolonun etkin oldugunu belli eden
+   hafif bir cerceve rengi alir. */
+.col__body.list.is-focused {
+    background-color: rgba(255,255,255,.03) !important;
+    border-color: rgba(46,197,255,.35) !important;
+}
+.col__body--bare.list.is-focused {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
