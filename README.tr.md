@@ -50,6 +50,24 @@ yoktur.
 
 ## Son güncellemeler
 
+**Yeni: uygulama oynatıcısı — Friends gibi dosyalar artık sarılabiliyor**
+- **Friends gibi sarılamayan MKV dosyaları artık sarılabiliyor.** Bazı MKV'lerde sarma
+  dizini (Cues) dosyanın başından doğrudan gösterilmez; Samsung oynatıcısı bu dosyalarda
+  her sarmayı reddeder ve görüntü takılır (gerçek TV'de ölçüldü). Uygulama oynatmadan önce
+  dosyanın ilk 8 KB'ına bakar ve böyle bir dosyayı **kendi oynatıcısıyla** açar: dosyayı
+  kendisi okur, sondaki sarma dizinini bulur, kareleri MP4 parçalarına çevirip tarayıcının
+  Media Source oynatıcısına verir. Sarma, kaldığı yerden devam, ses parçası seçimi ve
+  dosyanın içindeki altyazılar çalışır.
+- **Ayarlar → Film/Dizi Oynatıcısı:** *Uygulama oynatıcısı* seçilirse bütün MKV film ve
+  dizilerde bu oynatıcı kullanılır. Samsung oynatıcısı oynarken en yakın anahtar kareye
+  atladığı için 10 sn'lik sarma 8–12 sn olabiliyordu (TV'de ölçüldü); uygulama oynatıcısı
+  tam istenen saniyeye gider (±0,04 sn) ve kısa sarmalar bellekten anında olur.
+- **10 sn'lik sarma artık tam 10 sn:** sarma, yarım saniyede bir gelen konum bildirimi
+  yerine oynatıcının anlık konumundan hesaplanır (iki oynatıcıda da).
+- **"Baştan oynat" artık gerçekten baştan oynatır.** "Kaldığı Yerden Devam" ayarı
+  açıkken bu seçenek de kayıtlı konuma sarıyordu.
+- Bilgi şeridinde dosya türü (MKV, MP4, AVI…) gösterilir; sorun bildirirken işe yarar.
+
 **Hesap bir kez girilir — `hesaplar.txt`**
 - Linkinizi bilgisayarda proje klasöründeki `hesaplar.txt` dosyasına bir kez yapıştırın.
   Dosya her build'e girer; yeni kurulumda uygulama hesabı kendisi ekler ve giriş ekranı
@@ -70,6 +88,11 @@ yoktur.
 - Tampon değerleri Samsung'un alt sınırına (4 sn) çekildi; sarmadan sonra takılma azaldı.
 - Ağ kesilip yayın yeniden başlatılınca film/bölüm **kaldığı yerden** devam eder.
 - Sarma sonrası kısa beklemede ekranı kaplayan kutu yerine küçük bir gösterge çıkar.
+- Sarma tutmazsa, yanıt vermezse veya ardından görüntü donarsa yayın, **gerçekten
+  izlenen son konumdan** kendiliğinden yeniden açılır. Eskiden sarma hedefi kayıt
+  ediliyordu; bozuk bir noktaya sarınca bölüm her açılışta oraya sarıp yine donuyor,
+  ancak baştan oynatınca düzeliyordu. Bazı dosyalarda sarma hiç çalışmıyorsa bu
+  ekranda açıkça söylenir.
 
 **Tasarım düzeltmeleri**
 - Dizi/film ızgarasında seçili afiş artık **aşağı yukarı kaymaz**: ekrana tam iki satır
@@ -122,6 +145,9 @@ yoktur.
 ### Oynatıcı
 
 - Samsung **AVPlay** (`webapis.avplay`) donanım oynatıcısı; HLS `.m3u8`, MPEG-TS `.ts`, MP4, MKV
+- **Uygulama oynatıcısı (MKV)** — Media Source ile kendi MKV oynatıcısı; TV'nin saramadığı
+  dosyalarda kendiliğinden, istenirse (Ayarlar → Film/Dizi Oynatıcısı) bütün MKV film ve
+  dizilerde devreye girer. Sarma tam istenen saniyeye gider
 - Bir format açılmazsa **otomatik olarak diğerini dener** (`.m3u8` ↔ `.ts`)
 - **Hızlanan ileri/geri sarma** — art arda bastıkça adım büyür
   (10 sn → 30 sn → 1 dk → 2 dk → 5 dk), tuşu bırakınca tek seferde atlar
@@ -375,7 +401,7 @@ listesindeyseniz önce sezon satırına dönülür, metin düzenlenirken TV klav
   core/http.js  core/cache.js  core/storage.js
      │
      ▼
- player/controller.js ──► avplay.js  |  html5.js
+ player/controller.js ──► avplay.js  |  html5.js  |  mse.js (+ mkv.js, fmp4.js)
 ```
 
 **Kural:** Her katman yalnızca **altındakini** tanır. `views/` içinde hiçbir yerde
@@ -391,6 +417,14 @@ ardından aktif hesap varsa ana ekranı, yoksa giriş ekranını açar.
 `player/avplay.js`, AVPlay'in asenkron işlemleri (`prepareAsync`, `seekTo`) sürerken
 başka çağrı yapılmamasını garanti eden kilidi tutar: o sırada gelen duraklat/devam,
 parça seçimi ve görüntü ayarı işlem bitince uygulanır.
+
+**Uygulama oynatıcısı:** sarma dizini TV tarafından okunamayan MKV'ler (bunu
+`player/seekcheck.js` oynatmadan önce anlar) ve Ayarlar'da *Uygulama oynatıcısı*
+seçiliyse bütün MKV'ler `player/mse.js` ile oynatılır: `player/mkv.js` dosyayı parça
+parça çözer, `player/fmp4.js` kareleri MP4 parçalarına çevirir, `<video id="mse-player">`
+Media Source ile oynatır. Motor her açılışta seçilir; uygulama oynatıcısı bir dosyayı
+açamazsa o dosya AVPlay ile açılır. Hesap tek bağlantılı olabileceği için istekler hiç
+paralel atılmaz; tampon dosyanın bit hızına göre (~40 MB) ayarlanır.
 
 ### Klasör yapısı
 
@@ -454,6 +488,10 @@ iptv-app/
 ├── player/
 │   ├── avplay.js              webapis.avplay sarmalayıcısı
 │   ├── html5.js               PC tarayıcısı için <video> yedeği
+│   ├── seekcheck.js           MKV'de TV'nin sarma yapıp yapamayacağını oynatmadan önce anlar
+│   ├── mkv.js                 Matroska (MKV) çözümleyici: parça listesi, sarma dizini, kareler
+│   ├── fmp4.js                Parçalı MP4 yazıcı (H.264/H.265, E-AC-3/AC-3/AAC)
+│   ├── mse.js                 Media Source ile MKV oynatıcı ("uygulama oynatıcısı")
 │   └── controller.js          Oturum yönetimi: kurtarma, zapping, konum kaydı
 │
 ├── views/                     login, playlists, home, live, movies, series,
@@ -553,6 +591,7 @@ Altyazının yer değiştirmesi `transform` geçişiyle (GPU) yapılır.
 | `webapis.productinfo.isUdPanelSupported` | `views/settings.js` | 4K panel tespiti |
 | `tizen.systeminfo.getCapability(platform.version)` | `views/settings.js` | Tizen sürümü |
 | `tizen.filesystem.resolve / listStorages` | `services/backup.js` | USB / İndirilenler klasörüne yedek |
+| `MediaSource` / `SourceBuffer` (HTML5) | `player/mse.js` | Uygulama oynatıcısı: MKV'den çevrilen MP4 parçalarını oynatır (H.264 + E-AC-3 bu TV'de destekleniyor) |
 | `tizen.filesystem.openFile('wgt-package/…')` | `services/presets.js` | `hesaplar.txt` okunamazsa yedek okuma yolu (Tizen 5.0+) |
 
 Her çağrı `try/catch` ve özellik algılama (feature detection) ile korunmuştur;
@@ -582,8 +621,16 @@ gösterilmez ve uygulama çökmez (`window.onerror` ve `unhandledrejection` yaka
 - **Yayın açılmazsa** önce format değiştirilir (`.m3u8` ↔ `.ts`), sonra 2 kez yeniden
   denenir; ancak ondan sonra kullanıcıya hata gösterilir. Film/bölümde yeniden deneme
   **kalınan yerden** başlar.
-- **Sarma yanıt vermezse** (bazı firmware'ler geçersiz konumda callback çağırmaz) kilit
-  8 sn sonra kendiliğinden açılır; oynatıcı kilitli kalmaz.
+- **Sarma hata verirse, yanıt vermezse** (12 sn; bazı firmware'ler ve dosyalar callback
+  çağırmaz) **veya ardından görüntü donarsa** (20 sn ilerleme yok) yayın, gerçekten
+  izlenen son konumdan kendiliğinden yeniden açılır; oynatıcı donuk kalmaz. Aynı içerikte
+  sorun tekrarlarsa o içerikte sarma kapatılır; kaldığı yere de gidilemiyorsa baştan
+  oynatılır. Geçmişe sarma hedefi değil, gerçekten izlenen konum yazılır.
+- **MKV dosyasında sarma dizini TV tarafından okunamıyorsa** (`player/seekcheck.js`) dosya
+  uygulama oynatıcısıyla açılır. O da açamazsa (desteklenmeyen kodek, ör. DTS ses) AVPlay ile
+  açılır; sarma ve kaldığı yerden devam baştan kapatılır. Uygulama oynatıcısı oynarken art
+  arda hata verirse içerik AVPlay ile kaldığı yerden yeniden açılır. Ön kontrol 2,5 sn içinde
+  sonuçlanmazsa veya sunucu parça okumayı (HTTP Range) desteklemiyorsa hiçbir şey engellenmez.
 - **Hızlı kanal değiştirmede** eski yayının geç gelen başarı/hata sonucu yok sayılır;
   yanlış kanal yeniden denenmez.
 - **EPG bulunamaması hata sayılmaz** — sessizce boş geçilir, kanal yine açılır.
@@ -743,6 +790,11 @@ uygulamaya girmez.
 | Canlı TV'de KIRMIZI tuşu tanımsız `afterChannels()` çağırıyordu | Yenileme hata veriyor, filtre yok sayılıyordu | `views/live.js` |
 | Kayıtlı playlistler her build'de siliniyordu | Uzun linki her kurulumda kumandayla yazmak gerekiyordu | `services/presets.js` + `hesaplar.txt` |
 | OpenSubtitles anahtarı her build'de siliniyordu | Altyazı servisini her kurulumda yeniden girmek gerekiyordu | `services/presets.js` — `opensubtitles \|` satırı |
+| Bazı MKV dosyalarında (ör. Friends) sarma dizini baştaki SeekHead'den doğrudan gösterilmiyordu, sadece dosya sonundaki ikinci bir SeekHead'den gösteriliyordu | AVPlay her sarmayı anında reddediyor (`PLAYER_ERROR_SEEK_FAILED`), ardından görüntü takılıyordu; HTML5 `<video>` da donuyordu | `player/seekcheck.js` önceden tanır; `player/mse.js` (+ `mkv.js`, `fmp4.js`) dosyayı kendisi okuyup Media Source ile oynatır |
+| "Baştan oynat" `startMs: 0` gönderiyordu, oynatıcı 0'ı "belirtilmemiş" sayıyordu | Otomatik devam açıkken "Baştan oynat" yine kayıtlı konuma sarıyordu | `player/controller.js` — sayı olarak verilen başlangıç (0 dahil) uygulanır |
+| Sarma, yarım saniyede bir güncellenen konum bildiriminden hesaplanıyordu | 10 sn'lik sarma ~9,5 sn oluyordu | `player/controller.js` — `getLivePosition()`: oynatıcının anlık konumu |
+| AVPlay oynarken en yakın anahtar kareye atlıyordu | 10 sn ileri sarma 11–12 sn, geri sarma 8–9 sn oluyordu (anahtar kare 2 sn'de bir) | Ayarlar → Film/Dizi Oynatıcısı → *Uygulama oynatıcısı*: tam istenen kareye gider |
+| Sarma başarısız olsa da hedef konum "kaldığı yer" olarak kaydediliyordu | Bazı dizilerde ileri sarınca görüntü donuyor; MAVİ tuşla yeniden başlatmak ve bölümü yeniden açmak aynı noktaya sarıp yine donuyordu | `player/controller.js` — gerçekten izlenen konum (`goodPos`), sarma bekçisi, otomatik yeniden açma; `player/avplay.js` — takılan oynatıcıya bekleyen komut gönderilmez |
 
 </details>
 
@@ -763,6 +815,11 @@ uygulamaya girmez.
   yeni modellerde çalışmayabilir.
 - **Canlı yayın duraklatılamaz** (zaman kaydırma yoktur); PLAY/PAUSE'a basıldığında bu
   ekranda belirtilir.
+- **Uygulama oynatıcısı yalnızca MKV** dosyalarında ve H.264/H.265 görüntü + E-AC-3/AC-3/AAC
+  ses ile çalışır; görüntü tabanlı altyazıları (PGS/VobSub) göstermez. Canlı TV ve diğer
+  biçimler her zaman AVPlay ile açılır. Sarma dizini sondaki ikinci SeekHead'den gösterilen
+  bir MKV bu kodeklerin dışındaysa sarılamaz; kalıcı çözüm dosyanın sağlayıcı tarafından
+  yeniden paketlenmesidir (ör. `mkvmerge -o yeni.mkv eski.mkv`).
 
 ---
 

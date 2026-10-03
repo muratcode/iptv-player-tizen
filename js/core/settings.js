@@ -16,6 +16,8 @@
              AUTO_ASPECT_RATIO : TV karar verir */
 
         preferredFormat: 'm3u8',   /* canli yayin icin ilk denenecek format: m3u8 | ts */
+        vodPlayer: 'auto',         /* MKV film/dizi oynaticisi: auto (AVPlay; yalnizca
+                                      saramadigi dosyalarda MSE) | mse (tum MKV'ler MSE) */
         mode4K: true,              /* AVPlay SET_MODE_4K (2020+ modeller) */
         userAgent: '',             /* bazi paneller ozel UA ister; bos = varsayilan */
         osdTimeout: 6,             /* oynaticida bilgi seridi kac saniye sonra kaybolsun */

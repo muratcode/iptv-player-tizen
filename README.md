@@ -54,6 +54,25 @@ and ES5 JavaScript. No license, activation, account or telemetry.
 
 ## Recent updates
 
+**New: the app player — files like Friends can now be seeked**
+- **Unseekable MKV files like Friends can now be seeked.** In some MKV files the seek index
+  (Cues) is not referenced directly from the start of the file; Samsung's player rejects
+  every seek in these files and the picture gets stuck (measured on a real TV). Before
+  playback the app reads the first 8 KB of the file and opens such a file with **its own
+  player**: it reads the file itself, finds the seek index at the end, converts the frames to
+  MP4 fragments and feeds them to the browser's Media Source player. Seeking, resume, audio
+  track selection and the subtitles embedded in the file all work.
+- **Settings → Movie/Series Player** (*Film/Dizi Oynaticisi*): choosing *App player*
+  (*Uygulama oynaticisi*) uses this player for every MKV movie and series. While playing,
+  Samsung's player jumps to the nearest keyframe, so a 10 s seek could become 8–12 s
+  (measured on the TV); the app player lands exactly on the requested second (±0.04 s) and
+  short seeks are served instantly from memory.
+- **A 10 s seek is now exactly 10 s:** seeks are calculated from the player's live position
+  instead of the position report that arrives every half second (with both players).
+- **"Start over" (*Bastan oynat*) really starts from the beginning now.** With *Resume*
+  (*Kaldigi Yerden Devam*) enabled, it used to seek to the saved position as well.
+- The info bar shows the file type (MKV, MP4, AVI…), which helps when reporting problems.
+
 **Enter your account once — `hesaplar.txt`**
 - Paste your link once into `hesaplar.txt` ("accounts") in the project folder on your computer.
   The file goes into every build; on a fresh install the app adds the account by itself and
@@ -74,6 +93,11 @@ and ES5 JavaScript. No license, activation, account or telemetry.
 - When the stream is restarted after a network drop, movies/episodes **resume where they
   left off**.
 - Short waits after a seek show a small indicator instead of a full-screen box.
+- If a seek fails, never answers or freezes the picture afterwards, the stream reopens by
+  itself **from the last position that was actually played**. The seek target used to be
+  saved instead; after seeking to a broken point, the episode seeked there again on every
+  open and froze again, and only starting from the beginning helped. If seeking does not
+  work at all for a file, the screen says so clearly.
 
 **Design fixes**
 - The selected poster in the series/movie grid **no longer jumps up and down**: exactly two
@@ -129,6 +153,9 @@ and ES5 JavaScript. No license, activation, account or telemetry.
 ### Player
 
 - Samsung **AVPlay** (`webapis.avplay`) hardware player; HLS `.m3u8`, MPEG-TS `.ts`, MP4, MKV
+- **App player (MKV)** — the app's own MKV player built on Media Source; used automatically
+  for files the TV cannot seek, and optionally (Settings → Movie/Series Player) for every MKV
+  movie and series. Seeks land exactly on the requested second
 - If one format fails, it **automatically tries the other** (`.m3u8` ↔ `.ts`)
 - **Accelerating seek** — the step grows the more you press
   (10 s → 30 s → 1 min → 2 min → 5 min) and jumps once when you release the key
@@ -390,7 +417,7 @@ editing text, the TV keyboard closes.
   core/http.js  core/cache.js  core/storage.js
      │
      ▼
- player/controller.js ──► avplay.js  |  html5.js
+ player/controller.js ──► avplay.js  |  html5.js  |  mse.js (+ mkv.js, fmp4.js)
 ```
 
 **Rule:** each layer only knows the layer **below** it. Nowhere in `views/` is `App.Xtream`
@@ -406,6 +433,14 @@ then opens the home screen if there is an active account, or the login screen ot
 `player/avplay.js` holds the lock that guarantees no other call is made while AVPlay's
 asynchronous operations (`prepareAsync`, `seekTo`) are running: pause/resume, track
 selection and display settings that arrive meanwhile are applied when the operation finishes.
+
+**App player:** MKV files whose seek index the TV cannot read (detected before playback by
+`player/seekcheck.js`), and every MKV when *App player* is selected in Settings, are played
+by `player/mse.js`: `player/mkv.js` parses the file piece by piece, `player/fmp4.js` turns the
+frames into MP4 fragments, and `<video id="mse-player">` plays them through Media Source.
+The engine is chosen on every open; if the app player cannot open a file, that file is
+opened with AVPlay. Requests are never made in parallel (the account may allow a single
+connection), and the buffer is sized from the file's bit rate (~40 MB).
 
 ### Folder structure
 
@@ -469,6 +504,10 @@ iptv-app/
 ├── player/
 │   ├── avplay.js              webapis.avplay wrapper
 │   ├── html5.js               <video> fallback for PC browsers
+│   ├── seekcheck.js           Tells, before playback, whether the TV can seek in an MKV file
+│   ├── mkv.js                 Matroska (MKV) parser: tracks, seek index, frames
+│   ├── fmp4.js                Fragmented MP4 writer (H.264/H.265, E-AC-3/AC-3/AAC)
+│   ├── mse.js                 MKV player built on Media Source (the "app player")
 │   └── controller.js          Session management: recovery, zapping, position saving
 │
 ├── views/                     login, playlists, home, live, movies, series,
@@ -569,6 +608,7 @@ it is drawn once with the latest value. Moving the subtitles uses a `transform` 
 | `webapis.productinfo.isUdPanelSupported` | `views/settings.js` | 4K panel detection |
 | `tizen.systeminfo.getCapability(platform.version)` | `views/settings.js` | Tizen version |
 | `tizen.filesystem.resolve / listStorages` | `services/backup.js` | Backup to USB / the Downloads folder |
+| `MediaSource` / `SourceBuffer` (HTML5) | `player/mse.js` | App player: plays the MP4 fragments converted from MKV (H.264 + E-AC-3 are supported on this TV) |
 | `tizen.filesystem.openFile('wgt-package/…')` | `services/presets.js` | Fallback for reading `hesaplar.txt` (Tizen 5.0+) |
 
 Every call is guarded with `try/catch` and feature detection; newer features such as
@@ -598,8 +638,18 @@ to the user and the app does not crash (`window.onerror` and `unhandledrejection
 - **If a stream does not open**, the format is switched first (`.m3u8` ↔ `.ts`), then it is
   retried twice; only then is an error shown to the user. For movies/episodes the retry
   starts **from where playback stopped**.
-- **If a seek never answers** (some firmware does not call the callback for an invalid
-  position), the lock releases itself after 8 s; the player never stays locked.
+- **If a seek fails, never answers** (12 s; some firmware and files never call the
+  callback) **or freezes the picture afterwards** (no progress for 20 s), the stream reopens
+  by itself from the last position that was actually played; the player never stays frozen.
+  If it happens again for the same item, seeking is disabled for it; if even the resume
+  point cannot be reached, it plays from the beginning. History stores the position that
+  was actually watched, never the seek target.
+- **If the TV cannot read the seek index of an MKV file** (`player/seekcheck.js`), the file is
+  opened with the app player. If that cannot open it either (unsupported codec, e.g. DTS
+  audio), it is opened with AVPlay and seeking and resume are disabled up front. If the app
+  player keeps failing during playback, the item is reopened with AVPlay from where it
+  stopped. If the pre-check does not finish within 2.5 s or the server does not support
+  partial reads (HTTP Range), nothing is blocked.
 - **When zapping quickly**, a late success/error result from the previous stream is ignored;
   the wrong channel is never retried.
 - **Missing EPG is not an error** — it is silently left empty and the channel still opens.
@@ -761,6 +811,11 @@ tests and never enters the app.
 | In Live TV the RED key called an undefined `afterChannels()` | Refresh threw an error and the filter was ignored | `views/live.js` |
 | Saved playlists were deleted on every build | The long link had to be typed with the remote on every install | `services/presets.js` + `hesaplar.txt` |
 | The OpenSubtitles key was deleted on every build | The subtitle service had to be entered again on every install | `services/presets.js` — `opensubtitles \|` line |
+| In some MKV files (e.g. Friends) the seek index was referenced only by a second SeekHead at the end of the file, not by the first one | AVPlay rejected every seek at once (`PLAYER_ERROR_SEEK_FAILED`) and the picture then got stuck; HTML5 `<video>` froze too | `player/seekcheck.js` detects it in advance; `player/mse.js` (+ `mkv.js`, `fmp4.js`) reads the file itself and plays it through Media Source |
+| "Start over" sent `startMs: 0` and the player treated 0 as "not given" | With auto-resume enabled, "Start over" still seeked to the saved position | `player/controller.js` — a numeric start position (including 0) is honored |
+| Seeks were calculated from the position report that is updated every half second | A 10 s seek became ~9.5 s | `player/controller.js` — `getLivePosition()`: the player's live position |
+| While playing, AVPlay jumped to the nearest keyframe | A 10 s forward seek became 11–12 s, a backward one 8–9 s (a keyframe every 2 s) | Settings → Movie/Series Player → *App player*: lands exactly on the requested frame |
+| The seek target was saved as the resume point even when the seek failed | For some series the picture froze after fast-forwarding; restarting with BLUE or reopening the episode seeked to the same point and froze again | `player/controller.js` — actually-played position (`goodPos`), stall watchdog, automatic reopen; `player/avplay.js` — no queued commands are sent to a stuck player |
 
 </details>
 
@@ -781,6 +836,11 @@ tests and never enters the app.
   newer models.
 - **Live streams cannot be paused** (there is no time-shift); pressing PLAY/PAUSE says so on
   screen.
+- **The app player only handles MKV** files with H.264/H.265 video and E-AC-3/AC-3/AAC audio;
+  it does not show image-based subtitles (PGS/VobSub). Live TV and other formats are always
+  opened with AVPlay. An MKV whose seek index is referenced only by a second SeekHead at the
+  end of the file and that uses other codecs cannot be seeked; the real fix is for the
+  provider to remux the file (e.g. `mkvmerge -o new.mkv old.mkv`).
 
 ---
 

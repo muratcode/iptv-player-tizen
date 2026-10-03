@@ -30,14 +30,18 @@
         setTimeout(function () {
             if (t.parentNode) { t.parentNode.removeChild(t); }
         }, ms || 3200);
+        return t;
     }
 
     App.UI.Toast = {
         show: show,
-        info: function (m, ms) { show(m, null, ms); },
-        success: function (m, ms) { show(m, 'success', ms); },
-        warn: function (m, ms) { show(m, 'warn', ms); },
-        error: function (m, ms) { show(m, 'error', ms || 4500); },
+        info: function (m, ms) { return show(m, null, ms); },
+        success: function (m, ms) { return show(m, 'success', ms); },
+        warn: function (m, ms) { return show(m, 'warn', ms); },
+        error: function (m, ms) { return show(m, 'error', ms || 4500); },
+
+        /** show/info/...'nun dondurdugu bildirimi erken kaldir */
+        remove: function (t) { if (t && t.parentNode) { t.parentNode.removeChild(t); } },
 
         /** AppError'i dogrudan gostermek icin kisayol */
         fromError: function (err, prefix) {

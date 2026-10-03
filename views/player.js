@@ -185,6 +185,11 @@
 
             U.empty(elBadges);
             if (isLive) { elBadges.appendChild(U.el('span', 'badge badge--live', 'CANLI')); }
+            /* Dosya turu (MKV, MP4, AVI...): sarma sorunlarinin cogu
+               dosya turune baglidir, ariza bildirirken isimize yarar */
+            if (!isLive && item.containerExtension) {
+                elBadges.appendChild(U.el('span', 'badge', String(item.containerExtension).toUpperCase()));
+            }
             if (App.Favorites.has(item)) { elBadges.appendChild(U.el('span', 'badge', '★')); }
 
             lastProg = null;
@@ -273,6 +278,11 @@
          */
         function doSeek(dir, fixedSec) {
             if (App.Player.isLive()) { showOsd(); return; }
+            if (!App.Player.canSeek()) {
+                noSeekToast();
+                showOsd();
+                return;
+            }
 
             var dur = App.Player.getDuration();
             if (!dur) { return; }
@@ -284,7 +294,7 @@
                (eski konumdan hesaplayip geri ziplamayiz). */
             if (now - seek.last > 1200) {
                 seek.n = 0;
-                seek.target = App.Player.getPosition();
+                seek.target = App.Player.getLivePosition();
             }
             seek.last = now;
             seek.n++;
@@ -303,6 +313,15 @@
                 App.Player.seekTo(seek.target);
                 showOsd();
             }, 450);
+        }
+
+        /* Sarma kapaliyken her tus basisinda ayni bildirim ust uste binmesin */
+        var noSeekToastAt = 0;
+        function noSeekToast() {
+            var now = Date.now();
+            if (now - noSeekToastAt < 3000) { return; }
+            noSeekToastAt = now;
+            App.UI.Toast.info(App.Player.noSeekText());
         }
 
         function showSeekPreview(dir, stepSec) {
@@ -511,6 +530,10 @@
             var sec = Math.max(10, U.toInt(App.Settings.get('introSkipSeconds'), 90));
             hideIntro();
             intro.dismissed = true;
+            if (!App.Player.canSeek()) {
+                noSeekToast();
+                return;
+            }
             App.Player.seekTo(sec * 1000);
             App.UI.Toast.info('Intro atlandi (' + sec + ' sn)');
             showOsd();
@@ -667,19 +690,24 @@
 
         function onItem(d) {
             if (destroyed) { return; }
+            /* Ayni icerik kurtarma icin yeniden acildiysa indirilen altyazi
+               ve kapatilan oneriler korunur */
+            var again = !!(d.retry && currentItem && d.item && currentItem.key === d.item.key);
             /* Yeni icerik -> onerileri sifirla */
             hideNextUp();
             hideIntro();
             hideSubtitle();
-            /* Indirilen altyazi onceki bolume aitti - yenisinde gecerli degil */
-            App.Subtitles.clear();
-            nextUp.dismissed = false;
-            intro.dismissed = false;
+            if (!again) {
+                /* Indirilen altyazi onceki bolume aitti - yenisinde gecerli degil */
+                App.Subtitles.clear();
+                nextUp.dismissed = false;
+                intro.dismissed = false;
+            }
             seek.n = 0;
 
             fillItemInfo(d.item);
             showOsd();
-            autoLoadCachedSubtitle(d.item);
+            if (!again) { autoLoadCachedSubtitle(d.item); }
         }
 
         /**
@@ -733,9 +761,19 @@
 
         function onRecovering(d) {
             if (destroyed) { return; }
-            showBuffering(d.reason === 'format'
-                ? 'Alternatif yayin formati deneniyor...'
-                : 'Baglanti yeniden kuruluyor...');
+            showBuffering(d.reason === 'format' ? 'Alternatif yayin formati deneniyor...'
+                        : d.reason === 'seek' ? 'Yayin yeniden aciliyor...'
+                        : 'Baglanti yeniden kuruluyor...');
+        }
+
+        /* Oynaticinin kullaniciya soylemesi gerekenler (sarma sorunu vb.).
+           Kurtarma adim adim ilerlerken bildirimler ust uste yigilmasin:
+           yalnizca son durum gorunur. */
+        var noticeEl = null;
+        function onNotice(d) {
+            if (destroyed || !d || !d.text) { return; }
+            App.UI.Toast.remove(noticeEl);
+            noticeEl = App.UI.Toast.info(d.text, 6000);
         }
 
         function onBuffering(d) {
@@ -1336,6 +1374,7 @@
                 App.Bus.on('player:item', onItem);
                 App.Bus.on('player:error', onError);
                 App.Bus.on('player:recovering', onRecovering);
+                App.Bus.on('player:notice', onNotice);
                 App.Bus.on('player:buffering', onBuffering);
                 App.Bus.on('player:complete', onComplete);
                 App.Bus.on('player:subtitle', onSubtitleEvt);
@@ -1493,6 +1532,7 @@
                 App.Bus.off('player:item', onItem);
                 App.Bus.off('player:error', onError);
                 App.Bus.off('player:recovering', onRecovering);
+                App.Bus.off('player:notice', onNotice);
                 App.Bus.off('player:buffering', onBuffering);
                 App.Bus.off('player:complete', onComplete);
                 App.Bus.off('player:subtitle', onSubtitleEvt);

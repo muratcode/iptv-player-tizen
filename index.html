@@ -29,6 +29,10 @@
 <!-- webapis.avplay kullanilmadigi (PC tarayici) durumlar icin fallback oynatici -->
 <video id="html5-player" playsinline></video>
 
+<!-- Sarma dizini TV tarafindan okunamayan MKV'ler icin Media Source oynaticisi
+     (player/mse.js). Kareleri uygulama kendisi okuyup bu ogeye verir. -->
+<video id="mse-player" playsinline></video>
+
 <!--
   ACILIS GORSELI (splash)
   JS ile degil, DOGRUDAN HTML'de duruyor: boylece sayfa ilk boyanir
@@ -98,6 +102,10 @@
 <!-- ---------- PLAYER ---------- -->
 <script src="player/avplay.js"></script>
 <script src="player/html5.js"></script>
+<script src="player/seekcheck.js"></script>
+<script src="player/mkv.js"></script>
+<script src="player/fmp4.js"></script>
+<script src="player/mse.js"></script>
 <script src="player/controller.js"></script>
 
 <!-- ---------- VIEWS ---------- -->

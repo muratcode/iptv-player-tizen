@@ -33,7 +33,8 @@ input { font: inherit; }
     z-index: 0;
     display: none;
 }
-#html5-player {
+#html5-player,
+#mse-player {
     position: absolute;
     left: 0; top: 0;
     width: 100%; height: 100%;
@@ -43,4 +44,5 @@ input { font: inherit; }
     object-fit: contain;
 }
 body.player-active #av-player.is-avplay,
-body.player-active #html5-player.is-html5 { display: block; }
+body.player-active #html5-player.is-html5,
+body.player-active #mse-player.is-mse { display: block; }

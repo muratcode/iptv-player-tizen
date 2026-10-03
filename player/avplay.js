@@ -81,9 +81,11 @@
         };
     }
 
-    /* Sarma callback'i bu sure icinde gelmezse kilit zorla acilir
-       (bazi firmware'ler gecersiz konumda callback'i hic cagirmiyor). */
-    var SEEK_GUARD_MS = 8000;
+    /* Sarma callback'i bu sure icinde gelmezse oynatici TAKILMIS sayilir
+       (bazi firmware'ler / dosyalar gecersiz konumda callback'i hic
+       cagirmiyor). Kilit acilir ama bekleyen komutlar GONDERILMEZ;
+       controller yayini bastan acar (bkz. lastSeekFail). */
+    var SEEK_GUARD_MS = 12000;
     /* Yeni yayin acilirken / durdurulurken suren sarmanin bitmesi icin
        en fazla bu kadar beklenir. */
     var IDLE_WAIT_MS = 2500;
@@ -102,6 +104,9 @@
         this._deferred = [];        /* [{key, fn}] sarma bitince calisacaklar */
         this._idleWaiters = [];
         this._session = 0;          /* her yeni yayin / durdurmada artar */
+        /* Son basarisiz sarmanin nedeni: 'error' (AVPlay hata dondu) veya
+           'timeout' (hic yanit vermedi -> oynatici takili) */
+        this.lastSeekFail = '';
 
         /* Kilit surerken API'ye soramadigimiz degerler */
         this._timeCache = 0;
@@ -489,15 +494,24 @@
         var settled = false;
         var guard = null;
         this._busy = true;
+        this.lastSeekFail = '';
 
-        function done(ok) {
+        /** @param {string} [fail] '' basarili, 'error' | 'timeout' */
+        function done(fail) {
             if (settled) { return; }
             settled = true;
             clearTimeout(guard);
 
             var same = (session === self._session);
-            if (same && ok) { self._timeCache = job.ms; }
-            for (var i = 0; i < job.waiters.length; i++) { job.waiters[i](same && ok); }
+            var ok = same && !fail;
+            if (ok) { self._timeCache = job.ms; }
+            if (same && fail) { self.lastSeekFail = fail; }
+
+            /* Takilan oynaticiya yeni sarma veya ertelenen komut gonderilmez
+               (goruntuyu iyice kilitler); controller yayini yeniden acar. */
+            if (fail === 'timeout') { self._dropQueued(); }
+
+            for (var i = 0; i < job.waiters.length; i++) { job.waiters[i](ok); }
 
             /* Sarma surerken daha yeni bir hedef geldiyse kilidi birakmadan
                hemen ona gec (arada baska API cagrisi araya girmesin). */
@@ -509,17 +523,17 @@
         }
 
         guard = setTimeout(function () {
-            log.warn('seekTo ' + SEEK_GUARD_MS + ' ms icinde yanit vermedi');
-            done(false);
+            log.warn('seekTo ' + SEEK_GUARD_MS + ' ms icinde yanit vermedi:', job.ms);
+            done('timeout');
         }, SEEK_GUARD_MS);
 
         try {
             a.seekTo(job.ms,
-                function () { done(true); },
-                function (e) { log.warn('seekTo hata', e && (e.name || e.message)); done(false); });
+                function () { done(''); },
+                function (e) { log.warn('seekTo hata', job.ms, e && (e.name || e.message)); done('error'); });
         } catch (e) {
             log.warn('seekTo', e && e.message);
-            done(false);
+            done('error');
         }
     };
 

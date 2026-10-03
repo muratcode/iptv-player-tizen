@@ -30,6 +30,10 @@
         { value: 'm3u8', label: 'HLS (.m3u8)' },
         { value: 'ts', label: 'MPEG-TS (.ts)' }
     ];
+    var VOD_PLAYERS = [
+        { value: 'auto', label: 'Otomatik (onerilen)' },
+        { value: 'mse', label: 'Uygulama oynaticisi' }
+    ];
     var OSD_TIMES = [
         { value: 4, label: '4 saniye' },
         { value: 6, label: '6 saniye' },
@@ -187,6 +191,18 @@
                   help: 'HLS (.m3u8): daha uyumlu, biraz daha yuksek gecikme.\n' +
                         'MPEG-TS (.ts): daha dusuk gecikme, bazi sunucularda daha stabil.\n' +
                         'Secilen format acilmazsa uygulama otomatik digerini dener.' },
+
+                { id: 'vodPlayer', glyph: '🎬', title: 'Film/Dizi Oynaticisi',
+                  desc: 'MKV film ve dizilerde kullanilacak oynatici.',
+                  value: labelOf(VOD_PLAYERS, s.vodPlayer),
+                  help: 'Otomatik: Samsung oynaticisi (AVPlay). Yalnizca TV\'nin saramadigi MKV ' +
+                        'dosyalarinda uygulama oynaticisi kendiliginden devreye girer.\n\n' +
+                        'Uygulama oynaticisi: tum MKV film ve dizileri uygulama kendisi okur. ' +
+                        'Ileri/geri sarma tam istenen saniyeye gider; 10 sn gibi kisa sarmalar ' +
+                        'aninda olur.\n\n' +
+                        'Canli TV ve MKV disindaki dosyalar her zaman Samsung oynaticisiyla acilir. ' +
+                        'Uygulama oynaticisi bir dosyayi acamazsa o dosya Samsung oynaticisiyla acilir. ' +
+                        'Degisiklik bir sonraki acilista gecerli olur.' },
 
                 { id: 'mode4K', glyph: '🎞', title: '4K Modu',
                   desc: 'UHD yayinlar icin donanim hizlandirmasi.',
@@ -431,6 +447,12 @@
                 case 'preferredFormat':
                     var fm = App.Settings.cycle('preferredFormat', FORMATS);
                     App.UI.Toast.info('Yayin formati: ' + fm.label);
+                    refreshRows(true);
+                    return;
+
+                case 'vodPlayer':
+                    var vp = App.Settings.cycle('vodPlayer', VOD_PLAYERS);
+                    App.UI.Toast.info('Film/dizi oynaticisi: ' + vp.label);
                     refreshRows(true);
                     return;
 
