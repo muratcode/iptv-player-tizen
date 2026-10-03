@@ -2,368 +2,385 @@
 
 # IPTV Player
 
-**Samsung Smart TV (Tizen OS) için ücretsiz, reklamsız, açık kaynaklı IPTV oynatıcı**
+**A free, ad-free, open-source IPTV player for Samsung Smart TVs (Tizen OS)**
 
-Xtream Codes ve M3U desteği · Donanım video oynatma (AVPlay) · Tamamen kumanda odaklı arayüz
+Xtream Codes and M3U support · Hardware video playback (AVPlay) · Fully remote-driven interface
 
 ![Platform](https://img.shields.io/badge/platform-Samsung%20Tizen%20TV-1428A0)
-![Hedef](https://img.shields.io/badge/hedef-Tizen%209.0-0A7EA4)
+![Target](https://img.shields.io/badge/target-Tizen%209.0-0A7EA4)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES5-F7DF1E)
-![Bağımlılık](https://img.shields.io/badge/çalışma%20zamanı%20bağımlılığı-yok-brightgreen)
-![Reklam](https://img.shields.io/badge/reklam-yok-brightgreen)
+![Dependencies](https://img.shields.io/badge/runtime%20dependencies-none-brightgreen)
+![Ads](https://img.shields.io/badge/ads-none-brightgreen)
+
+**English** · [Türkçe](README.tr.md)
 
 </div>
 
 ---
 
 > [!IMPORTANT]
-> Bu uygulama **hiçbir kanal veya içerik sağlamaz.** Yalnızca kullanıcının yasal olarak
-> erişim hakkına sahip olduğu IPTV yayınlarını oynatır. Kodda hiçbir gerçek sunucu adresi
-> veya hesap bilgisi bulunmaz; tüm örnekler `http://SERVER:PORT`, `USERNAME`, `PASSWORD`
-> gibi yer tutuculardır. İçeriğin yasal sorumluluğu kullanıcıya aittir.
+> This app **does not provide any channels or content.** It only plays IPTV streams that the
+> user is legally entitled to access. The code contains no real server addresses or account
+> details; all examples use placeholders such as `http://SERVER:PORT`, `USERNAME` and
+> `PASSWORD`. Legal responsibility for the content lies with the user.
 
-Android TV için değil, Samsung'un **Tizen OS** işletim sistemi için yazılmıştır. Framework
-kullanmaz; saf HTML5, CSS3 ve ES5 JavaScript'tir. Lisans, aktivasyon, hesap veya telemetri
-yoktur.
+Written for Samsung's **Tizen OS**, not Android TV. It uses no framework: plain HTML5, CSS3
+and ES5 JavaScript. No license, activation, account or telemetry.
 
-## İçindekiler
+> [!NOTE]
+> The app's user interface is in **Turkish**. This document gives on-screen labels in English
+> with the Turkish label exactly as it appears on screen in parentheses, e.g. *Settings*
+> (*Ayarlar*), so you can find them on the TV.
 
-- [Son güncellemeler](#son-güncellemeler)
-- [Özellikler](#özellikler)
-- [Hızlı başlangıç](#hızlı-başlangıç)
-- [Kullanım](#kullanım)
-- [Kumanda tuşları](#kumanda-tuşları)
-- [Mimari](#mimari)
-- [Performans tasarımı](#performans-tasarımı)
-- [Kullanılan Samsung / Tizen API'leri](#kullanılan-samsung--tizen-apileri)
-- [Hata yönetimi](#hata-yönetimi)
-- [İnternetten altyazı (OpenSubtitles)](#internetten-altyazı-opensubtitles)
-- [Veri saklama ve gizlilik](#veri-saklama-ve-gizlilik)
-- [Testler](#testler)
-- [Bilinen sınırlar](#bilinen-sınırlar)
-- [Katkıda bulunma](#katkıda-bulunma)
-- [Lisans](#lisans)
+## Contents
 
----
-
-## Son güncellemeler
-
-**Hesap bir kez girilir — `hesaplar.txt`**
-- Linkinizi bilgisayarda proje klasöründeki `hesaplar.txt` dosyasına bir kez yapıştırın.
-  Dosya her build'e girer; yeni kurulumda uygulama hesabı kendisi ekler ve giriş ekranı
-  açılmaz. Ayrıntılar: [hesaplar.txt](#hesabınızı-her-buildde-yeniden-girmeyin-hesaplartxt).
-- Aynı dosyaya `opensubtitles | API_ANAHTARI` satırı eklenirse altyazı servisi de her
-  kurulumda kendiliğinden ayarlanır.
-- Açılışta "hesaplar.txt: hesap eklendi, altyazı servisi ayarlandı" bildirimi çıkar;
-  giriş ekranında da bu özellik hatırlatılır.
-
-**İleri/geri sarmada donma giderildi**
-- AVPlay'in `seekTo` işlemi sürerken başka komut kabul etmediği (Samsung dokümanı)
-  dikkate alınmıyordu: ard arda sarma, sarma sırasında duraklatma veya parça listesi
-  okuma görüntüyü donduruyordu. Artık sarma sürerken gelen komutlar sıraya alınır,
-  sarma bitince uygulanır.
-- Ard arda basılan sarmalar ve ⏪ ⏩ tuşları birikir, **tek sarma** yapılır.
-- Sarma, sürmekte olan sarmanın **hedefinden** devam eder (eskiden eski konumdan
-  hesaplanıp geri atlayabiliyordu).
-- Tampon değerleri Samsung'un alt sınırına (4 sn) çekildi; sarmadan sonra takılma azaldı.
-- Ağ kesilip yayın yeniden başlatılınca film/bölüm **kaldığı yerden** devam eder.
-- Sarma sonrası kısa beklemede ekranı kaplayan kutu yerine küçük bir gösterge çıkar.
-
-**Tasarım düzeltmeleri**
-- Dizi/film ızgarasında seçili afiş artık **aşağı yukarı kaymaz**: ekrana tam iki satır
-  sığar, seçili satır hep aynı yerde durur, sütun sayısı ekrana göre hesaplanır.
-- Afiş odak çerçevesi resmin **üstünde** çizilir (eskiden resmin arkasında kalıyordu).
-- Altyazı seçim listesinde aşağı inince liste artık **yukarı fırlamaz**; uzun listelerde
-  "7 / 20" sayacı gösterilir.
-- Ekrandaki altyazı, bilgi şeridi açılınca zıplamak yerine yumuşakça yukarı kayar.
-- Kolon başlıkları ilk satırın üstüne binmiyor; alt ipucu çubuğu içeriğe binmiyor.
-- Ayarlar ekranında liste sağ paneli kaplamıyor; bir ayarı değiştirince liste zıplamıyor.
-- Giriş ve Altyazı Servisi ekranları iki sütunlu karta geçti ve 1080p ekrana tam sığıyor.
-- Kategori arama kutusu kolon başlığına taşındı; afişlere daha çok yer kaldı.
-- Oynatıcıda bildirimler "Intro'yu Atla" / "Sonraki bölüm" kartlarının üstüne binmiyor.
-
-**Diğer düzeltmeler**
-- Canlı TV'de KIRMIZI (yenile) tuşu hata veriyordu ve arama filtresini yok sayıyordu.
-- Canlı yayında duraklatma desteklenmiyorsa ekranda yanlışlıkla "Duraklatıldı"
-  yazmıyor; kullanıcıya açıkça söyleniyor.
-- Hızlı kanal değiştirirken eski kanalın geç gelen sonucu yeni kanalı bozmuyor.
+- [Recent updates](#recent-updates)
+- [Features](#features)
+- [Quick start](#quick-start)
+- [Usage](#usage)
+- [Remote control keys](#remote-control-keys)
+- [Architecture](#architecture)
+- [Performance design](#performance-design)
+- [Samsung / Tizen APIs used](#samsung--tizen-apis-used)
+- [Error handling](#error-handling)
+- [Online subtitles (OpenSubtitles)](#online-subtitles-opensubtitles)
+- [Data storage and privacy](#data-storage-and-privacy)
+- [Tests](#tests)
+- [Known limitations](#known-limitations)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## Özellikler
+## Recent updates
 
-### Giriş ve playlist yönetimi
+**Enter your account once — `hesaplar.txt`**
+- Paste your link once into `hesaplar.txt` ("accounts") in the project folder on your computer.
+  The file goes into every build; on a fresh install the app adds the account by itself and
+  the login screen never appears. Details: [hesaplar.txt](#enter-your-account-once-hesaplartxt).
+- Add an `opensubtitles | API_KEY` line to the same file and the subtitle service is set up
+  automatically on every install as well.
+- On startup a notification reports what was imported ("account added, subtitle service
+  configured"); the login screen also reminds you of this feature.
 
-- **Xtream Codes API** — sunucu URL + kullanıcı adı + şifre
-- **M3U / M3U8** — doğrudan playlist adresi (+ isteğe bağlı XMLTV EPG adresi)
-- **`hesaplar.txt`** — linki (ve isteğe bağlı OpenSubtitles anahtarını) bilgisayarda bir kez
-  yazın; her build'de hesap ve altyazı servisi otomatik kurulur
-- **Birden fazla playlist** kaydedin, tek tuşla geçin (*Playlistlerim* ekranı)
-- Her playlist için **QR kodu** — telefona aktarın veya başka cihaza taşıyın
-- **USB'ye yedekle / geri yükle** — uygulamayı yeniden kurunca veriler kaybolmasın
-- Şifre varsayılan olarak gizli, "Şifreyi göster" ile açılır
+**Fast-forward / rewind freeze fixed**
+- The app ignored the fact (documented by Samsung) that AVPlay accepts no other command while
+  `seekTo` is running: repeated seeks, pausing during a seek or reading the track list froze
+  the picture. Commands that arrive during a seek are now queued and applied once it finishes.
+- Repeated seek presses and the ⏪ ⏩ keys accumulate into **a single seek**.
+- A seek continues from the **target** of the seek in progress (it used to be calculated from
+  the old position and could jump backwards).
+- Buffering values were raised to Samsung's minimum (4 s); less stalling after a seek.
+- When the stream is restarted after a network drop, movies/episodes **resume where they
+  left off**.
+- Short waits after a seek show a small indicator instead of a full-screen box.
 
-### İçerik
+**Design fixes**
+- The selected poster in the series/movie grid **no longer jumps up and down**: exactly two
+  rows fit on screen, the selected row always stays in the same place, and the number of
+  columns is calculated from the screen width.
+- The poster focus frame is drawn **on top of** the image (it used to be hidden behind it).
+- Scrolling down the subtitle selection list no longer makes the list **jump up**; long lists
+  show a "7 / 20" counter.
+- On-screen subtitles slide up smoothly when the info bar opens instead of jumping.
+- Column headers no longer overlap the first row; the bottom hint bar no longer covers content.
+- In Settings the list no longer covers the right-hand panel and no longer jumps when you
+  change a setting.
+- The Login and Subtitle Service screens use a two-column card and fit a 1080p screen.
+- The category search box moved into the column header, leaving more room for posters.
+- In the player, notifications no longer cover the "Skip Intro" / "Next episode" cards.
 
-- **Canlı TV** — kategoriler, kanallar, logolar, kanal numaraları, EPG (şimdi / sonra)
-- **Filmler (VOD)** — kategoriler, afişler, detay (özet, süre, oyuncular, puan)
-- **Diziler** — kategoriler, sezonlar, bölümler, bölüm özetleri
-- **M3U'da otomatik dizi tespiti** — `Dizi Adı S01 E05`, `1x05`, `Sezon 1 Bölüm 5` gibi
-  kalıplar tanınır; bölümler dizilere gruplanır ve Filmler bölümünü kirletmez
-- **Kategori sırası korunur** — sağlayıcının playlistteki sırası bozulmaz
-  (TR kanalları neredeyse her zaman en üsttedir, alfabetik sıralama bunu bozardı)
-- Favoriler (kanal / film / dizi / bölüm)
-- Son izlenenler + **kaldığı yerden devam etme**
-- Kategori içinde arama ve genel arama (Türkçe karakter duyarsız: "guclu" ↔ "güçlü")
-- Hesap bilgileri: durum, **bitiş tarihi**, kalan gün, eşzamanlı bağlantı sayısı
-
-### Oynatıcı
-
-- Samsung **AVPlay** (`webapis.avplay`) donanım oynatıcısı; HLS `.m3u8`, MPEG-TS `.ts`, MP4, MKV
-- Bir format açılmazsa **otomatik olarak diğerini dener** (`.m3u8` ↔ `.ts`)
-- **Hızlanan ileri/geri sarma** — art arda bastıkça adım büyür
-  (10 sn → 30 sn → 1 dk → 2 dk → 5 dk), tuşu bırakınca tek seferde atlar
-- **Donmayan sarma** — AVPlay sarma sürerken başka komut kabul etmez; sarma sırasında
-  gelen sarma/duraklatma/parça seçimi sıraya alınır, ara hedefler atlanıp yalnızca sonuncusu
-  uygulanır
-- Ağ kopmasında veya MAVİ tuşla yeniden başlatmada film/bölüm **kaldığı yerden** devam eder
-- **Otomatik sonraki bölüm** — son saniyelerde geri sayımlı kart;
-  sezon değişiyorsa otomatik geçmez, sorar
-- **İntro'yu atla** önerisi (OK ile)
-- Çoklu **ses** ve **altyazı** seçimi — seçili parça ✔ ile işaretlenir,
-  dil kodları Türkçe adlara çevrilir (`tur` → Türkçe)
-- **Altyazı ekrana uygulama tarafından çizilir** (AVPlay altyazıyı kendisi çizmez),
-  kalın konturlu ve TV'de okunaklı; bilgi şeridi açılınca yumuşakça yukarı kayar
-- **Seçilen ses/altyazı dili hatırlanır** ve sonraki içeriklerde otomatik uygulanır
-  (indeks değil dil kodu saklanır, çünkü indeks her dosyada değişir)
-- **İnternetten altyazı indirme** (OpenSubtitles) — [ayrıntılar aşağıda](#internetten-altyazı-opensubtitles)
-- Kanal numarasıyla hızlı geçiş, 4K modu, görüntü oranı seçimi
-- Hata durumunda Türkçe mesaj + **Tekrar Dene / Sonraki Kanal / Geri Dön**
-
-### Arayüz
-
-- Koyu tema, yüksek kontrast, 3–4 metreden okunabilir büyük fontlar
-- Belirgin odak göstergesi — hangi öğenin seçili olduğu her zaman net; afişlerde
-  çerçeve resmin üstünde çizilir, odakta yazı kalınlaşıp kıpırdamaz
-- **Sabit odak** — afiş ızgarasında seçili satır hep aynı yerde durur, içerik onun
-  altında kayar; ekrana tam iki satır sığar, sütun sayısı ekran genişliğine göre hesaplanır
-- Listelerde kaydırma satır sınırına oturur (üstte yarım kesik satır kalmaz)
-- Etkin kolon panelinin çerçevesi hafifçe vurgulanır
-- Kategori içi arama kutusu kolon başlığının sağında durur (ayrı satır kaplamaz)
-- Uzun seçim listelerinde (ör. altyazı sonuçları) "7 / 20" konum sayacı
-- Oynatıcıda bildirimler sağ üstte çıkar; alt köşedeki "Intro'yu Atla" / "Sonraki bölüm"
-  kartlarının üstüne binmez
-- Giriş ve Altyazı Servisi ekranları iki sütunlu kart; 1080p ekrana tam sığar
-- **Mouse/dokunmatik yok** — tamamen kumanda odaklı
-- 1080p ve 4K'da aynı görünüm (tüm ölçüler `rem`, `html { font-size: 100vw/120 }`)
-- Overscan güvenli alanı
-- İsteğe bağlı **açılış görseli** (splash) — süresi Ayarlar'dan değiştirilir,
-  herhangi bir tuşla atlanır
+**Other fixes**
+- In Live TV the RED (refresh) key threw an error and ignored the search filter.
+- When a live stream cannot be paused, the screen no longer wrongly says "Paused"; the user
+  is told clearly instead.
+- When zapping quickly, a late result from the previous channel no longer breaks the new one.
 
 ---
 
-## Hızlı başlangıç
+## Features
 
-### Gereksinimler
+### Login and playlist management
 
-| Gereksinim | Açıklama |
+- **Xtream Codes API** — server URL + username + password
+- **M3U / M3U8** — direct playlist URL (+ optional XMLTV EPG URL)
+- **`hesaplar.txt`** — write your link (and optionally your OpenSubtitles key) once on your
+  computer; the account and subtitle service are set up automatically in every build
+- Save **multiple playlists** and switch with one key (*My Playlists* / *Playlistlerim* screen)
+- A **QR code** for each playlist — transfer it to your phone or another device
+- **Back up to / restore from USB** — so data is not lost when the app is reinstalled
+- Password hidden by default, revealed with "Show password" (*Sifreyi goster*)
+
+### Content
+
+- **Live TV** — categories, channels, logos, channel numbers, EPG (now / next)
+- **Movies (VOD)** — categories, posters, details (plot, duration, cast, rating)
+- **Series** — categories, seasons, episodes, episode summaries
+- **Automatic series detection in M3U** — patterns such as `Show Name S01 E05`, `1x05`,
+  `Season 1 Episode 5` and `Sezon 1 Bölüm 5` are recognized; episodes are grouped into
+  series and do not clutter the Movies section
+- **Category order is preserved** — the provider's order in the playlist is kept
+  (Turkish channels are almost always at the top; alphabetical sorting would break that)
+- Favorites (channel / movie / series / episode)
+- Recently watched + **resume where you left off**
+- Search within a category and global search (ignores Turkish diacritics: "guclu" ↔ "güçlü")
+- Account info: status, **expiry date**, days left, number of concurrent connections
+
+### Player
+
+- Samsung **AVPlay** (`webapis.avplay`) hardware player; HLS `.m3u8`, MPEG-TS `.ts`, MP4, MKV
+- If one format fails, it **automatically tries the other** (`.m3u8` ↔ `.ts`)
+- **Accelerating seek** — the step grows the more you press
+  (10 s → 30 s → 1 min → 2 min → 5 min) and jumps once when you release the key
+- **Freeze-free seeking** — AVPlay accepts no other command during a seek; seeks, pauses and
+  track selections that arrive meanwhile are queued, intermediate targets are skipped and
+  only the last one is applied
+- After a network drop, or when restarting with the BLUE key, movies/episodes **resume where
+  they left off**
+- **Automatic next episode** — a countdown card in the final seconds;
+  if the season changes it asks instead of switching automatically
+- **Skip intro** suggestion (with OK)
+- Multiple **audio** and **subtitle** tracks — the selected track is marked with ✔,
+  language codes are shown as names (`tur` → Türkçe)
+- **Subtitles are drawn by the app** (AVPlay does not render them itself), with a thick
+  outline that is readable on a TV; they slide up smoothly when the info bar opens
+- **The chosen audio/subtitle language is remembered** and applied automatically to later
+  content (the language code is stored, not the index, because the index differs per file)
+- **Subtitle download from the internet** (OpenSubtitles) — [details below](#online-subtitles-opensubtitles)
+- Quick switching by channel number, 4K mode, aspect ratio selection
+- On errors: a message + **Retry / Next Channel / Go Back**
+
+### Interface
+
+- Dark theme, high contrast, large fonts readable from 3–4 meters
+- Clear focus indicator — it is always obvious which item is selected; on posters the frame
+  is drawn on top of the image, and focused text does not turn bold or shift
+- **Fixed focus** — in the poster grid the selected row always stays in the same place and
+  the content scrolls beneath it; exactly two rows fit on screen, and the number of columns
+  is calculated from the screen width
+- Scrolling in lists snaps to row boundaries (no half-cut row at the top)
+- The frame of the active column panel is subtly highlighted
+- The in-category search box sits to the right of the column header (it takes no extra row)
+- Long selection lists (e.g. subtitle results) show a "7 / 20" position counter
+- In the player, notifications appear in the top-right corner and do not cover the
+  "Skip Intro" / "Next episode" cards at the bottom
+- The Login and Subtitle Service screens use a two-column card that fits a 1080p screen
+- **No mouse/touch** — fully remote-driven
+- Same look at 1080p and 4K (all sizes in `rem`, `html { font-size: 100vw/120 }`)
+- Overscan safe area
+- Optional **splash image** — its duration is set in Settings, any key skips it
+
+---
+
+## Quick start
+
+### Requirements
+
+| Requirement | Description |
 |---|---|
-| Samsung TV | Tizen 9.0 (2025 modeller) hedeflenmiştir |
-| Geliştirme bilgisayarı | Windows 10/11 (Tizen araçları için) |
-| Tizen araçları | Tizen Studio + TV Extension **veya** VS Code Tizen eklentisi |
-| Samsung hesabı | Ücretsiz; sertifika oluşturmak için gerekir |
-| Ağ | PC ve TV **aynı yerel ağda** olmalı |
+| Samsung TV | Targets Tizen 9.0 (2025 models) |
+| Development computer | Windows 10/11 (for the Tizen tools) |
+| Tizen tools | Tizen Studio + TV Extension **or** the VS Code Tizen extension |
+| Samsung account | Free; needed to create a certificate |
+| Network | The PC and the TV must be on the **same local network** |
 
-Sıfırdan, adım adım kurulum (Tizen Studio, Developer Mode, sertifika, TV'ye yükleme)
-için: **[KURULUM.md](KURULUM.md)**
+For a step-by-step setup from scratch (Tizen Studio, Developer Mode, certificate, installing
+on the TV), see **[KURULUM.md](KURULUM.md)** (in Turkish).
 
-### Görsel dosyaları (repoda yok)
+### Image files (not in the repository)
 
-Uygulama simgesi ve açılış görseli depoya **dahil edilmemiştir.** Projeyi derlemeden önce
-kendi görsellerinizi ekleyin:
+The app icon and splash image are **not included** in the repository. Add your own images
+before building the project:
 
-| Dosya | Boyut | Zorunlu mu? | Eksikse ne olur? |
+| File | Size | Required? | What happens if missing? |
 |---|---|---|---|
-| `icon.png` | 512×512 PNG | **Evet** — `config.xml` kullanır | Paket derlenmez veya TV'de varsayılan simge görünür |
-| `assets/icon.png` | 128×128 PNG | Hayır | Giriş ekranında ▶ logosu gösterilir |
-| `assets/splash.jpg` | 1920×1080 JPEG | Hayır | Açılış görseli atlanır, uygulama doğrudan açılır |
+| `icon.png` | 512×512 PNG | **Yes** — used by `config.xml` | The package does not build or the TV shows a default icon |
+| `assets/icon.png` | 128×128 PNG | No | The login screen shows a ▶ logo |
+| `assets/splash.jpg` | 1920×1080 JPEG | No | The splash is skipped and the app opens directly |
 
-### Önce bilgisayarda deneyin (TV gerekmez)
+### Try it on a PC first (no TV needed)
 
 ```cmd
 python -m http.server 8080
 ```
 
-Ardından Chrome'da `http://localhost:8080` adresini açın. `webapis.avplay` bulunmadığı
-için uygulama otomatik olarak HTML5 `<video>` moduna geçer.
+Then open `http://localhost:8080` in Chrome. Since `webapis.avplay` is not available, the app
+automatically switches to HTML5 `<video>` mode.
 
-- **Klavye eşlemesi:** ok tuşları = yön, **Enter** = OK, **Backspace** = RETURN
-- Chrome MPEG-TS oynatamaz ve HLS'i yalnızca Safari destekler; bu yüzden **PC'de görüntü
-  gelmemesi normaldir.** Liste, gezinme, arama, favoriler, ayarlar ve hata yönetimi
-  eksiksiz test edilebilir.
-- Klasörde dolu bir `hesaplar.txt` varsa tarayıcıda da hesap otomatik eklenir ve giriş
-  ekranı atlanır. Giriş ekranını denemek için hesabı uygulama içinden silin
-  (*Playlistlerim* → KIRMIZI); aynı tarayıcıda geri eklenmez.
+- **Keyboard mapping:** arrow keys = directions, **Enter** = OK, **Backspace** = RETURN
+- Chrome cannot play MPEG-TS and only Safari supports HLS natively, so **no picture on a PC is
+  normal.** Lists, navigation, search, favorites, settings and error handling can all be
+  tested fully.
+- If the folder contains a filled-in `hesaplar.txt`, the account is added automatically in the
+  browser too and the login screen is skipped. To try the login screen, delete the account in
+  the app (*My Playlists* → RED); it is not re-added in the same browser.
 
-### TV'ye kurulum (özet)
+### Installing on the TV (summary)
 
-1. TV'de **Developer Mode**'u açın (Apps ekranında `1 2 3 4 5`) ve PC'nin IP'sini girin.
-2. Sertifika oluşturun (Samsung sertifikası; TV'nin DUID'ine bağlı Distributor sertifikası).
-3. TV'ye bağlanıp derleyin, imzalayın, yükleyin:
+1. Turn on **Developer Mode** on the TV (type `1 2 3 4 5` on the Apps screen) and enter the
+   PC's IP address.
+2. Create a certificate (Samsung certificate; Distributor certificate bound to the TV's DUID).
+3. Connect to the TV, then build, sign and install:
 
 ```cmd
 sdb connect <TV_IP>:26101
 
 tizen build-web -e tests -e _kaynak -e node_modules -e "*.md" -- .
-tizen package -t wgt -s <SERTIFIKA_PROFILI> -- .buildResult
+tizen package -t wgt -s <CERTIFICATE_PROFILE> -- .buildResult
 tizen install -n IPTVPlayer.wgt -- .buildResult -t <TV_IP>:26101
 tizen run -p IptvPlyr01.IPTVPlayer -t <TV_IP>:26101
 ```
 
-> `hesaplar.txt`'yi **hariç tutmayın** (`-e` listesine eklemeyin); hesabın her kurulumda
-> otomatik gelmesi bu dosyanın pakette olmasına bağlıdır.
+> **Do not exclude** `hesaplar.txt` (do not add it to the `-e` list); the account arriving
+> automatically on every install depends on this file being in the package.
 
-> **VS Code kullanıyorsanız:** Tizen eklentisinin `Tizen: Build Project` ve
-> `Tizen: Run Project` komutları aynı işi yapar. Eklenti `tests/` ve `_kaynak/`
-> klasörlerini kendiliğinden dışlamaz; `tizen_web_project.yaml` içindeki `excludes`
-> listesine `tests/*` ve `_kaynak/*` ekleyin.
+> **Using VS Code:** the Tizen extension's `Tizen: Build Project` and `Tizen: Run Project`
+> commands do the same job. The extension does not exclude the `tests/` and `_kaynak/`
+> folders by itself; add `tests/*` and `_kaynak/*` to the `excludes` list in
+> `tizen_web_project.yaml`.
 
-> **Yeniden kurulumda uygulama verisi silinir.** Hesabınızı korumak için
-> [`hesaplar.txt`](#hesabınızı-her-buildde-yeniden-girmeyin-hesaplartxt) kullanın.
-> Favoriler ve geçmiş için yeni sürümü yüklemeden önce **Ayarlar → USB'ye Yedekle**
-> ile yedek alın, kurulumdan sonra **Ayarlar → Yedekten Geri Yükle** deyin.
+> **Reinstalling wipes the app's data.** Use
+> [`hesaplar.txt`](#enter-your-account-once-hesaplartxt) to keep your account. For favorites
+> and history, make a backup with **Settings → Back up to USB** (*Ayarlar → USB'ye Yedekle*)
+> before installing the new version, then choose **Settings → Restore from backup**
+> (*Ayarlar → Yedekten Geri Yukle*) after installing.
 
-### Hesabınızı her build'de yeniden girmeyin: `hesaplar.txt`
+### Enter your account once: `hesaplar.txt`
 
-Uzun playlist linkini kumandayla yazmak yerine, bilgisayarda proje klasöründeki
-`hesaplar.txt` dosyasına **bir kez** yapıştırın. Dosya her build'de pakete girer;
-uygulama açılışta onu okur, kayıtlı olmayan hesabı ekler ve etkinleştirir. Giriş
-ekranı hiç görünmeden ana ekran açılır.
+Instead of typing a long playlist link with the remote, paste it **once** into `hesaplar.txt`
+in the project folder on your computer. The file goes into the package on every build; at
+startup the app reads it, adds any account that is not yet saved and activates it. The home
+screen opens without the login screen ever appearing.
 
 ```text
-# Her satıra bir hesap; # ile başlayan satırlar açıklamadır
+# One account per line; lines starting with # are comments
 http://SERVER:PORT/get.php?username=USERNAME&password=PASSWORD&type=m3u_plus
-Ev Hesabı | http://SERVER:PORT/get.php?username=USERNAME&password=PASSWORD
-İş Hesabı | http://SERVER:PORT | USERNAME | PASSWORD
-m3u | Liste | http://SERVER:PORT/liste.m3u8
+Home | http://SERVER:PORT/get.php?username=USERNAME&password=PASSWORD
+Work | http://SERVER:PORT | USERNAME | PASSWORD
+m3u | List | http://SERVER:PORT/list.m3u8
 
-# Altyazı servisi (isteğe bağlı) — kullanıcı adı/şifre ve dil zorunlu değil
-opensubtitles | API_ANAHTARI | KULLANICI | SIFRE | dil=tr
+# Subtitle service (optional) — username/password and language are not required
+opensubtitles | API_KEY | USERNAME | PASSWORD | dil=en
 ```
 
-- `get.php?username=...&password=...` linkleri otomatik olarak **Xtream Codes** hesabına
-  çevrilir (filmler, diziler ve rehber daha iyi çalışır). Düz M3U istiyorsanız satırın
-  başına `m3u |` yazın.
-- `opensubtitles |` satırı OpenSubtitles API anahtarını (ve varsa hesabı) her kurulumda
-  kaydeder; Ayarlar → Altyazı Servisi ekranına bir daha girmeniz gerekmez. `dil=` yazmazsanız
-  Türkçe aranır.
-- Dosya her açılışta okunur. Kayıtlı bir Xtream hesabının şifresini dosyada
-  değiştirirseniz, sonraki açılışta kayıtlı hesap da güncellenir (kopya oluşmaz).
-- Uygulama içinden sildiğiniz bir hesap aynı kurulumda geri eklenmez; yeni build kurulunca eklenir.
-  Altyazı ayarını TV'den elle değiştirirseniz, dosyadaki satırı değiştirene kadar TV'deki
-  ayar korunur. Satırı silmek kayıtlı ayarı silmez.
-- Anlaşılamayan satırlar atlanır (günlüğe uyarı yazılır); diğer satırlar yine işlenir.
-- Dosya şifrenizi içerir: `.gitignore`'dadır, ama **.wgt paketine girer** — paketi paylaşmayın.
-- Dosya yoksa veya boşsa uygulama normal şekilde giriş ekranıyla açılır.
+- `get.php?username=...&password=...` links are converted automatically into an
+  **Xtream Codes** account (movies, series and the guide work better that way). If you want
+  a plain M3U list, start the line with `m3u |`.
+- The `opensubtitles |` line saves your OpenSubtitles API key (and account, if given) on
+  every install; you never have to open *Settings → Subtitle Service* (*Altyazi Servisi*)
+  again. `dil=` means "language"; without it, subtitles are searched in Turkish (`dil=tr`).
+  The keyword `altyazi` ("subtitle") works in place of `opensubtitles`.
+- The file is read on every startup. If you change the password of a saved Xtream account in
+  the file, the saved account is updated on the next startup (no duplicate is created).
+- An account you delete in the app is not re-added within the same install; it comes back
+  when a new build is installed. If you change the subtitle settings on the TV by hand, the
+  TV setting is kept until you change the line in the file. Removing the line does not delete
+  the saved setting.
+- Lines that cannot be understood are skipped (a warning is logged); the other lines are still
+  processed.
+- The file contains your password: it is in `.gitignore`, but it **does go into the .wgt
+  package** — do not share the package.
+- If the file is missing or empty, the app opens normally with the login screen.
 
 ---
 
-## Kullanım
+## Usage
 
-1. **Giriş ekranında** playlist türünü seçin:
-   - **Xtream Codes:** `http://SERVER:PORT`, kullanıcı adı, şifre
-   - **M3U:** playlist adresi (+ isteğe bağlı XMLTV EPG adresi)
+1. On the **login screen**, choose the playlist type:
+   - **Xtream Codes:** `http://SERVER:PORT`, username, password
+   - **M3U:** playlist URL (+ optional XMLTV EPG URL)
 
-   Uzun linki kumandayla yazmak istemiyorsanız onu build almadan önce
-   [`hesaplar.txt`](#hesabınızı-her-buildde-yeniden-girmeyin-hesaplartxt) dosyasına yazın;
-   giriş ekranı hiç açılmaz.
-2. Playlist kaydedilir; sonraki açılışlarda *Playlistlerim* ekranından seçersiniz.
-3. Ana ekrandan Canlı TV, Filmler, Diziler, Favoriler, Son İzlenenler, Arama ve
-   Ayarlar'a geçin.
+   If you would rather not type a long link with the remote, put it in
+   [`hesaplar.txt`](#enter-your-account-once-hesaplartxt) before building; the login screen
+   will never open.
+2. The playlist is saved; on later starts you pick it from the *My Playlists* screen.
+3. From the home screen, go to Live TV, Movies, Series, Favorites, Recently Watched, Search
+   and Settings.
 
-> **Diziler yalnızca Xtream Codes** kaynaklarında tam çalışır. M3U'da sezon/bölüm
-> yapısı yoktur; uygulama bunu otomatik tespit etmeye çalışır ve kullanıcıya açıkça söyler.
+> **Series only work fully with Xtream Codes** sources. M3U has no season/episode structure;
+> the app tries to detect it automatically and tells the user clearly.
 
 ---
 
-## Kumanda tuşları
+## Remote control keys
 
-### Genel
+### General
 
-| Tuş | İşlev |
+| Key | Action |
 |---|---|
-| ◀ ▶ ▲ ▼ | Gezinme |
-| OK / Enter | Seç / aç |
-| RETURN (Back) | Geri |
-| EXIT | Çıkış onayı |
+| ◀ ▶ ▲ ▼ | Navigate |
+| OK / Enter | Select / open |
+| RETURN (Back) | Back |
+| EXIT | Exit confirmation |
 
-**GERİ tuşu davranışı:**
+**BACK key behavior:**
 
 ```
-oynatıcı  →  liste  →  ana menü  →  "Çıkılsın mı?" onayı  →  çıkış
+player  →  list  →  home menu  →  "Exit?" confirmation  →  exit
 ```
 
-Ekran içi durumlar da önce geri alınır: oynatıcıda bilgi şeridi açıksa önce o kapanır,
-Canlı TV'de kanal kolonundaysanız önce kategori kolonuna dönülür, dizi detayında bölüm
-listesindeyseniz önce sezon satırına dönülür, metin düzenlenirken TV klavyesi kapanır.
+On-screen states are undone first: in the player an open info bar closes first; in Live TV,
+if you are in the channel column you return to the category column first; on the series
+detail screen, if you are in the episode list you return to the season row first; while
+editing text, the TV keyboard closes.
 
-### Canlı TV
+### Live TV
 
-| Tuş | İşlev |
+| Key | Action |
 |---|---|
-| SARI | Favorilere ekle / çıkar |
-| MAVİ | Favori kategorisine atla |
-| KIRMIZI | Kanal listesini yenile |
-| 0–9 | Kanal numarasıyla hızlı geçiş |
-| CH+ / CH− | Sayfa atlama |
-| ▲ (listenin başında) | Başlıktaki kategori içi arama kutusuna geç |
+| YELLOW | Add to / remove from favorites |
+| BLUE | Jump to the favorites category |
+| RED | Refresh the channel list |
+| 0–9 | Quick switch by channel number |
+| CH+ / CH− | Page jump |
+| ▲ (at the top of the list) | Move to the in-category search box in the header |
 
-### Oynatıcı
+### Player
 
-| Tuş | İşlev |
+| Key | Action |
 |---|---|
-| OK | Sırasıyla: **sonraki bölüm** → **intro'yu atla** → **durdur / devam** |
-| INFO | Bilgi şeridini aç/kapat |
-| ▲ ▼ / CH+ CH− | Kanal değiştir (canlı) |
-| ◀ ▶ | Geri / ileri sar — art arda bastıkça hızlanır |
-| ⏪ ⏩ | 1 dk geri / ileri — art arda basınca birikir, tek sarma yapılır |
-| PLAY / PAUSE | Duraklat / devam (canlı yayında desteklenmiyorsa ekranda belirtilir) |
-| KIRMIZI | Favori |
-| YEŞİL | Ses parçası seç |
-| SARI | Altyazı seç |
-| MAVİ | Yayını yeniden başlat (donma durumunda; film/bölüm kaldığı yerden devam eder) |
-| 0–9 | Kanal numarası |
+| OK | In order: **next episode** → **skip intro** → **pause / resume** |
+| INFO | Show/hide the info bar |
+| ▲ ▼ / CH+ CH− | Change channel (live) |
+| ◀ ▶ | Rewind / fast-forward — speeds up as you keep pressing |
+| ⏪ ⏩ | 1 min back / forward — repeated presses accumulate into a single seek |
+| PLAY / PAUSE | Pause / resume (if a live stream does not support it, this is shown on screen) |
+| RED | Favorite |
+| GREEN | Choose audio track |
+| YELLOW | Choose subtitles |
+| BLUE | Restart the stream (when frozen; movies/episodes resume where they left off) |
+| 0–9 | Channel number |
 
-### Diğer ekranlar
+### Other screens
 
-| Ekran | Tuş | İşlev |
+| Screen | Key | Action |
 |---|---|---|
-| Ana ekran | KIRMIZI | İçeriği yenile |
-| Ana ekran | SARI | Arama |
-| Filmler / Diziler | OK | Film detayı ve oynatma seçenekleri / dizinin sezon ve bölümleri |
-| Filmler / Diziler | SARI | Favorilere ekle / çıkar |
-| Filmler / Diziler | ▲ (ızgaranın başında) | Başlıktaki kategori içi arama kutusuna geç |
-| Dizi detayı | CH+ / CH− | Önceki / sonraki sezon |
-| Dizi detayı | SARI | Bölümü favorilere ekle / çıkar |
-| Favoriler | SARI | Favorilerden çıkar |
-| Favoriler | MAVİ | Tüm favorileri temizle |
-| Son İzlenenler | SARI | Kayıttan sil |
-| Son İzlenenler | MAVİ | Geçmişi temizle |
-| Playlistlerim | YEŞİL | Yeni playlist ekle |
-| Playlistlerim | SARI | Düzenle |
-| Playlistlerim | KIRMIZI | Sil |
-| Arama (sonuç listesinde) | SARI | Favorilere ekle / çıkar |
-| Giriş | KIRMIZI / YEŞİL | Xtream Codes / M3U sekmesine geç |
+| Home | RED | Refresh content |
+| Home | YELLOW | Search |
+| Movies / Series | OK | Movie details and playback options / the series' seasons and episodes |
+| Movies / Series | YELLOW | Add to / remove from favorites |
+| Movies / Series | ▲ (at the top of the grid) | Move to the in-category search box in the header |
+| Series detail | CH+ / CH− | Previous / next season |
+| Series detail | YELLOW | Add episode to / remove from favorites |
+| Favorites | YELLOW | Remove from favorites |
+| Favorites | BLUE | Clear all favorites |
+| Recently Watched | YELLOW | Delete entry |
+| Recently Watched | BLUE | Clear history |
+| My Playlists | GREEN | Add a new playlist |
+| My Playlists | YELLOW | Edit |
+| My Playlists | RED | Delete |
+| Search (in the results list) | YELLOW | Add to / remove from favorites |
+| Login | RED / GREEN | Switch to the Xtream Codes / M3U tab |
 
 ---
 
-## Mimari
+## Architecture
 
 ```
-        views/*  (ekranlar — yalnızca sunum ve kumanda)
+        views/*  (screens — presentation and remote input only)
            │
            ▼
-    services/content.js   ◄── CEPHE (facade)
+    services/content.js   ◄── FACADE
            │
      ┌─────┴─────┐
      ▼           ▼
@@ -376,277 +393,282 @@ listesindeyseniz önce sezon satırına dönülür, metin düzenlenirken TV klav
  player/controller.js ──► avplay.js  |  html5.js
 ```
 
-**Kural:** Her katman yalnızca **altındakini** tanır. `views/` içinde hiçbir yerde
-`App.Xtream` doğrudan çağrılmaz; hepsi `App.Content` üzerinden geçer. Yeni bir kaynak
-türü eklemek için yalnızca `content.js` genişletilir.
+**Rule:** each layer only knows the layer **below** it. Nowhere in `views/` is `App.Xtream`
+called directly; everything goes through `App.Content`. Adding a new source type only
+requires extending `content.js`.
 
-**Açılış sırası:** `js/app.js` önce `services/presets.js` ile `hesaplar.txt`'yi okur
-(hesapları `services/profile.js`'e, altyazı ayarını `services/opensubtitles.js`'e yazar),
-ardından aktif hesap varsa ana ekranı, yoksa giriş ekranını açar.
+**Startup order:** `js/app.js` first reads `hesaplar.txt` through `services/presets.js`
+(accounts go to `services/profile.js`, subtitle settings to `services/opensubtitles.js`),
+then opens the home screen if there is an active account, or the login screen otherwise.
 
-**Oynatıcı katmanı:** `player/controller.js` tüm sarmaları tek noktadan yönetir
-(`engineSeek`) ve sarma sürerken AVPlay'den gelen eski konumları yok sayar.
-`player/avplay.js`, AVPlay'in asenkron işlemleri (`prepareAsync`, `seekTo`) sürerken
-başka çağrı yapılmamasını garanti eden kilidi tutar: o sırada gelen duraklat/devam,
-parça seçimi ve görüntü ayarı işlem bitince uygulanır.
+**Player layer:** `player/controller.js` handles all seeks from a single place
+(`engineSeek`) and ignores stale positions reported by AVPlay while a seek is running.
+`player/avplay.js` holds the lock that guarantees no other call is made while AVPlay's
+asynchronous operations (`prepareAsync`, `seekTo`) are running: pause/resume, track
+selection and display settings that arrive meanwhile are applied when the operation finishes.
 
-### Klasör yapısı
+### Folder structure
 
 ```
 iptv-app/
-├── config.xml                 Tizen manifest: privilege, CSP, ayarlar
-├── tizen_web_project.yaml     VS Code Tizen eklentisi proje ayarları
-├── index.html                 Tek sayfa; script yükleme sırası burada
-├── icon.png                   Uygulama simgesi (repoda yok, bkz. yukarıda)
-├── hesaplar.txt               Kişisel hesap linkleri + altyazı anahtarı; her build'e girer (repoda yok)
-├── KURULUM.md                 Tizen Studio + TV'ye kurulum kılavuzu
+├── config.xml                 Tizen manifest: privileges, CSP, settings
+├── tizen_web_project.yaml     VS Code Tizen extension project settings
+├── index.html                 Single page; script load order lives here
+├── icon.png                   App icon (not in the repo, see above)
+├── hesaplar.txt               Personal account links + subtitle key; goes into every build (not in the repo)
+├── README.md                  This document (English)
+├── README.tr.md               Turkish version of this document
+├── KURULUM.md                 Tizen Studio + TV installation guide (Turkish)
 │
 ├── css/
-│   ├── theme.css              Renk/ölçü token'ları, tipografi, güvenli alan
-│   ├── reset.css              TV için sadeleştirilmiş reset (cursor:none)
-│   ├── layout.css             Uygulama iskeleti, 3 kolon düzeni, topbar
-│   ├── components.css         Buton, alan, liste, poster, modal, toast
-│   └── views.css              Ekrana özel düzenler
+│   ├── theme.css              Color/size tokens, typography, safe area
+│   ├── reset.css              Simplified reset for TV (cursor:none)
+│   ├── layout.css             App skeleton, 3-column layout, top bar
+│   ├── components.css         Button, field, list, poster, modal, toast
+│   └── views.css              Screen-specific layouts
 │
 ├── js/
-│   ├── app.js                 Başlatıcı: tuş yönlendirici, yaşam döngüsü
+│   ├── app.js                 Bootstrapper: key router, lifecycle
 │   ├── core/
-│   │   ├── polyfill.js        Eski Tizen tarayıcıları için ES5/ES6 eksikleri
-│   │   ├── utils.js           DOM, metin, tarih, URL, parçalı döngü yardımcıları
-│   │   ├── logger.js          Etiketli günlük + seviye kontrolü
-│   │   ├── errors.js          App.AppError — tipli hata + Türkçe mesaj
-│   │   ├── events.js          Global olay veriyolu (App.Bus)
-│   │   ├── storage.js         localStorage sarmalayıcı + şifre gizleme
-│   │   ├── settings.js        Kullanıcı tercihleri
-│   │   ├── cache.js           İki katmanlı (bellek + disk) TTL'li önbellek
-│   │   ├── bigstore.js        IndexedDB büyük veri deposu (playlist blob)
-│   │   ├── http.js            XHR istemcisi: timeout, retry, tipli hatalar
-│   │   ├── keys.js            Samsung kumanda tuş kodları + registerKey()
-│   │   ├── nav.js             Geometrik odak yönetimi (spatial navigation)
-│   │   ├── router.js          Ekran yığını + GERİ tuşu davranışı
-│   │   └── actions.js         Ortak "içerik açma" mantığı
+│   │   ├── polyfill.js        ES5/ES6 gaps for old Tizen browsers
+│   │   ├── utils.js           DOM, text, date, URL and chunked-loop helpers
+│   │   ├── logger.js          Tagged logging + level control
+│   │   ├── errors.js          App.AppError — typed error + user message
+│   │   ├── events.js          Global event bus (App.Bus)
+│   │   ├── storage.js         localStorage wrapper + password obfuscation
+│   │   ├── settings.js        User preferences
+│   │   ├── cache.js           Two-tier (memory + disk) TTL cache
+│   │   ├── bigstore.js        IndexedDB store for large data (playlist blob)
+│   │   ├── http.js            XHR client: timeout, retry, typed errors
+│   │   ├── keys.js            Samsung remote key codes + registerKey()
+│   │   ├── nav.js             Geometric focus management (spatial navigation)
+│   │   ├── router.js          Screen stack + BACK key behavior
+│   │   └── actions.js         Shared "open content" logic
 │   └── ui/
-│       ├── loading.js         Tam ekran yükleniyor göstergesi
-│       ├── toast.js           Kısa bildirimler
-│       ├── modal.js           Onay / uyarı / seçim pencereleri
-│       ├── field.js           TV klavyesi (IME) ile metin girişi
-│       ├── imageLoader.js     Kuyruklu, sınırlı eşzamanlı logo/afiş yükleyici
-│       ├── virtualList.js     Sanal liste/ızgara — performansın kalbi
-│       └── qrcode.js          Saf ES5 QR kodlayıcı (harici bağımlılık yok)
+│       ├── loading.js         Full-screen loading indicator
+│       ├── toast.js           Short notifications
+│       ├── modal.js           Confirm / alert / choice dialogs
+│       ├── field.js           Text input with the TV keyboard (IME)
+│       ├── imageLoader.js     Queued logo/poster loader with limited concurrency
+│       ├── virtualList.js     Virtual list/grid — the heart of performance
+│       └── qrcode.js          Pure ES5 QR encoder (no external dependency)
 │
 ├── services/
-│   ├── profile.js             Kayıtlı playlistler + aktif hesap
-│   ├── xtream.js              Xtream Codes API istemcisi + URL üretimi
-│   ├── m3u.js                 M3U/M3U8 çözümleyici (parçalı, UI'yi kilitlemez)
-│   ├── epg.js                 Xtream short_epg + XMLTV akış çözümleyici
-│   ├── content.js             CEPHE: view'lar kaynak türünü bilmez
-│   ├── favorites.js           Favoriler
-│   ├── history.js             Son izlenenler + kaldığı yer
-│   ├── backup.js              USB/dahili depolamaya yedekle & geri yükle
-│   ├── presets.js             hesaplar.txt: hesapları ve altyazı servisini açılışta kurar
-│   ├── subtitles.js           SRT/VTT çözümleyici + zaman çizelgesi
-│   └── opensubtitles.js       OpenSubtitles REST API istemcisi
+│   ├── profile.js             Saved playlists + active account
+│   ├── xtream.js              Xtream Codes API client + URL generation
+│   ├── m3u.js                 M3U/M3U8 parser (chunked, never blocks the UI)
+│   ├── epg.js                 Xtream short_epg + streaming XMLTV parser
+│   ├── content.js             FACADE: views don't know the source type
+│   ├── favorites.js           Favorites
+│   ├── history.js             Recently watched + resume position
+│   ├── backup.js              Back up & restore to USB/internal storage
+│   ├── presets.js             hesaplar.txt: sets up accounts and the subtitle service at startup
+│   ├── subtitles.js           SRT/VTT parser + timeline
+│   └── opensubtitles.js       OpenSubtitles REST API client
 │
 ├── player/
-│   ├── avplay.js              webapis.avplay sarmalayıcısı
-│   ├── html5.js               PC tarayıcısı için <video> yedeği
-│   └── controller.js          Oturum yönetimi: kurtarma, zapping, konum kaydı
+│   ├── avplay.js              webapis.avplay wrapper
+│   ├── html5.js               <video> fallback for PC browsers
+│   └── controller.js          Session management: recovery, zapping, position saving
 │
 ├── views/                     login, playlists, home, live, movies, series,
 │                              seriesDetail, favorites, recent, search, settings,
 │                              opensubtitles, player
 │
-├── assets/                    icon.png, splash.jpg (repoda yok, bkz. yukarıda)
-└── tests/                     jsdom tabanlı otomatik testler
+├── assets/                    icon.png, splash.jpg (not in the repo, see above)
+└── tests/                     jsdom-based automated tests
 ```
 
-### Neden ES5?
+### Why ES5?
 
-Kod bilerek **ES5** sözdizimindedir (`var`, `function`; template literal, `class`,
-`async/await` yok). Sebep Tizen sürümleri arasındaki motor farkıdır:
+The code is deliberately written in **ES5** syntax (`var`, `function`; no template literals,
+`class` or `async/await`). The reason is the engine difference between Tizen versions:
 
-| Tizen | Yıl | Tarayıcı motoru |
+| Tizen | Year | Browser engine |
 |---|---|---|
-| 2.3 | 2015 modeller | Chromium 34 |
-| 2.4 | 2016 modeller | Chromium 47 — `async/await` ve destructuring yok |
-| 9.0 | 2025 modeller | Modern Chromium |
+| 2.3 | 2015 models | Chromium 34 |
+| 2.4 | 2016 models | Chromium 47 — no `async/await` or destructuring |
+| 9.0 | 2025 models | Modern Chromium |
 
-ES5 yazmak hiçbir şey kaybettirmez, ama uygulamanın eski ve yeni Samsung TV'lerde
-çalışma ihtimalini artırır. `Promise` kullanılır (Tizen 2.3+ destekler) ve güvenlik
-ağı olarak küçük bir polyfill bulunur.
-
----
-
-## Performans tasarımı
-
-Bir IPTV playlistinde 10.000+ kanal olabilir. Naif bir uygulama bunu TV'de 20 saniye
-donmayla açar. Bu projede şu önlemler alınmıştır:
-
-**1. Sanal liste** (`js/ui/virtualList.js`) — Ekranda görünen satır kadar (+ tampon) DOM
-öğesi oluşturulur ve kaydırırken **yeniden kullanılır.** Kaydırma `scrollTop` yerine
-`transform: translateY()` ile yapılır (GPU hızlandırmalı, reflow yok).
-
-> Ölçüm (jsdom, 20.000 öğe): **15 DOM düğümü, 15 render, 2 ms**
-
-**2. TTL'li önbellek + kompakt M3U kodlaması** (`js/core/cache.js`, `services/m3u.js`) —
-Kategoriler 6 saat, kanal listeleri 30 dakika, EPG 2 dakika, çözümlenmiş M3U playlisti
-1 hafta önbelleklenir. Her öğe bir diziye, kategori adı bir indekse çevrilir; adres ve
-logo alanlarının **ortak ön eki bir kez** saklanır (gerçek bir Xtream M3U'sunda 20.000
-kanalın tamamı aynı 77 karakterlik önekle başlar).
-
-> Ölçüm (5.000 kanallık gerçekçi playlist): **1.985 KB → 298 KB (%15)**, yaklaşık 6,7 kat küçülme
-
-**3. IndexedDB depolama** (`js/core/bigstore.js`) — Samsung TV'de `localStorage` kotası
-~5 MB'tır ve tüm uygulama verisi bu alanı paylaşır. Büyük playlist sığmayınca yazma
-sessizce başarısız oluyor ve liste her açılışta yeniden indiriliyordu. Playlist bloğu
-artık IndexedDB'ye yazılır; IndexedDB yoksa sessizce `localStorage`'a düşülür.
-
-**4. Zorunlu senkron layout'un kaldırılması** — `U.rem()` her satır render'ında
-`getComputedStyle()` çağırıyordu ve bu kaydırmada gözle görülür kasma yaratıyordu.
-Değer artık önbelleklenir. Liste satırları yeniden kurulmaz: DOM iskeleti havuz öğesi
-başına bir kez kurulur, kaydırırken yalnızca metin/görsel güncellenir (`create` + `update`).
-Odak halkası `box-shadow` animasyonu yerine anında belirir.
-
-**5. Parçalı çözümleme** (`U.chunked`) — 100.000 satırlık M3U ve 50 MB'lık XMLTV
-dosyaları 2.000'lik parçalar halinde, her parça arasında `setTimeout(0)` ile işlenir.
-Arayüz asla kilitlenmez, kullanıcı yüzde görür. XMLTV için **DOMParser kullanılmaz**
-(50 MB XML'in DOM ağacı ~500 MB RAM ister); regex tabanlı akış çözümleme yapılır ve
-yalnızca "şimdi −2 saat / +36 saat" penceresindeki programlar saklanır.
-
-**6. Kaydırma biçimleri** (`js/ui/virtualList.js`) — Kısa satırlı listeler (kanal,
-kategori) `edge` modunda kayar: odak kenara gelince kaydırılır, bir satırlık ön izleme
-görünür alana sığacak kadarla sınırlıdır ve kaydırma satır sınırına oturur. Afiş
-ızgaraları `anchor` modundadır: odaklı satır daima üstte durur. Liste yenilenirken
-(`setItems(..., { keepScroll: true })`) kaydırma konumu korunur.
-
-**7. Görünmeyen öğeye yazılmaz** — Oynatıcı her ~0,5 sn konum bildirir; bilgi şeridi
-kapalıyken ilerleme çubuğu güncellenmez, şerit açılınca son değerle bir kez çizilir.
-Altyazının yer değiştirmesi `transform` geçişiyle (GPU) yapılır.
-
-> Kasmanın sebebi ES5 değildi. ES5 ile ES6 arasında çalışma zamanı hız farkı yoktur;
-> ikisi de aynı JIT tarafından derlenir.
+Writing ES5 costs nothing, but it increases the chance that the app runs on both old and new
+Samsung TVs. `Promise` is used (supported since Tizen 2.3), with a small polyfill as a
+safety net.
 
 ---
 
-## Kullanılan Samsung / Tizen API'leri
+## Performance design
 
-| API | Nerede | Ne için |
+An IPTV playlist can have 10,000+ channels. A naive app opens that on a TV with a 20-second
+freeze. This project takes the following measures:
+
+**1. Virtual list** (`js/ui/virtualList.js`) — only as many DOM elements as there are visible
+rows (+ a buffer) are created, and they are **reused** while scrolling. Scrolling uses
+`transform: translateY()` instead of `scrollTop` (GPU-accelerated, no reflow).
+
+> Measurement (jsdom, 20,000 items): **15 DOM nodes, 15 renders, 2 ms**
+
+**2. TTL cache + compact M3U encoding** (`js/core/cache.js`, `services/m3u.js`) —
+categories are cached for 6 hours, channel lists for 30 minutes, EPG for 2 minutes and the
+parsed M3U playlist for 1 week. Each item becomes an array and each category name an index;
+the **common prefix** of the URL and logo fields is stored once (in a real Xtream M3U, all
+20,000 channels start with the same 77-character prefix).
+
+> Measurement (realistic 5,000-channel playlist): **1,985 KB → 298 KB (15%)**, about 6.7× smaller
+
+**3. IndexedDB storage** (`js/core/bigstore.js`) — on Samsung TVs the `localStorage` quota is
+~5 MB and all app data shares it. When a large playlist did not fit, the write failed
+silently and the list was downloaded again on every start. The playlist blob is now written
+to IndexedDB; if IndexedDB is unavailable, it silently falls back to `localStorage`.
+
+**4. Removing forced synchronous layout** — `U.rem()` called `getComputedStyle()` on every
+row render, which caused visible stutter while scrolling. The value is now cached. List rows
+are not rebuilt: the DOM skeleton is built once per pool element, and scrolling only updates
+text/images (`create` + `update`). The focus ring appears instantly instead of animating
+`box-shadow`.
+
+**5. Chunked parsing** (`U.chunked`) — 100,000-line M3U and 50 MB XMLTV files are processed in
+chunks of 2,000 with `setTimeout(0)` between chunks. The UI never locks up and the user sees
+a percentage. XMLTV is **not parsed with DOMParser** (the DOM tree of a 50 MB XML file needs
+~500 MB of RAM); a regex-based streaming parser is used instead, and only programmes in the
+"now −2 hours / +36 hours" window are kept.
+
+**6. Scroll modes** (`js/ui/virtualList.js`) — lists with short rows (channels, categories)
+scroll in `edge` mode: they scroll when focus reaches the edge, the one-row look-ahead is
+limited to what fits in the visible area, and scrolling snaps to row boundaries. Poster grids
+use `anchor` mode: the focused row always stays at the top. When a list is refreshed
+(`setItems(..., { keepScroll: true })`), the scroll position is kept.
+
+**7. Nothing is written to invisible elements** — the player reports its position every
+~0.5 s; while the info bar is closed the progress bar is not updated, and when the bar opens
+it is drawn once with the latest value. Moving the subtitles uses a `transform` transition
+(GPU).
+
+> ES5 was not the cause of the stutter. There is no runtime speed difference between ES5 and
+> ES6; both are compiled by the same JIT.
+
+---
+
+## Samsung / Tizen APIs used
+
+| API | Where | What for |
 |---|---|---|
-| `webapis.avplay.open / prepareAsync / play` | `player/avplay.js` | Donanım video oynatma |
-| `webapis.avplay.setDisplayRect` | `player/avplay.js` | Video düzleminin ekrandaki yeri |
-| `webapis.avplay.setDisplayMethod` | `player/avplay.js` | En-boy oranı (letterbox / doldur) |
-| `setStreamingProperty('SET_MODE_4K')` | `player/avplay.js` | 4K donanım yolu (2020+ modeller) |
-| `setStreamingProperty('ADAPTIVE_INFO')` | `player/avplay.js` | HLS başlangıç bit hızı → hızlı kanal açılışı |
-| `webapis.avplay.setBufferingParam` | `player/avplay.js` | Başlangıç (4 sn) ve sarma/takılma sonrası (5 sn) tampon; Samsung alt sınırı 4 sn |
-| `webapis.avplay.setTimeoutForBuffering` | `player/avplay.js` | Tampon 10 sn'de dolmazsa oynatmaya devam et (sarmadan sonra uzun donuk ekran olmasın) |
-| `webapis.avplay.seekTo` | `player/avplay.js` | Sarma. Asenkron ve kilitleyicidir: callback gelene kadar başka AVPlay çağrısı yapılmaz, istekler sıraya alınır |
-| `getTotalTrackInfo` / `setSelectTrack` | `player/avplay.js` | Çoklu ses / altyazı seçimi |
-| `getStreamingProperty('CURRENT_BANDWIDTH')` | `player/avplay.js` | Tanı bilgisi |
-| `tizen.tvinputdevice.registerKey` | `js/core/keys.js` | Medya, kanal, renkli ve sayı tuşları |
-| `tizen.tvinputdevice.getSupportedKeys` | `js/core/keys.js` | Firmware farklarını tespit |
-| `tizen.application.getCurrentApplication().exit()` | `js/core/router.js` | Uygulamadan çıkış |
-| `webapis.productinfo.getRealModel / getFirmware` | `views/settings.js` | Sistem bilgisi ekranı |
-| `webapis.productinfo.isUdPanelSupported` | `views/settings.js` | 4K panel tespiti |
-| `tizen.systeminfo.getCapability(platform.version)` | `views/settings.js` | Tizen sürümü |
-| `tizen.filesystem.resolve / listStorages` | `services/backup.js` | USB / İndirilenler klasörüne yedek |
-| `tizen.filesystem.openFile('wgt-package/…')` | `services/presets.js` | `hesaplar.txt` okunamazsa yedek okuma yolu (Tizen 5.0+) |
+| `webapis.avplay.open / prepareAsync / play` | `player/avplay.js` | Hardware video playback |
+| `webapis.avplay.setDisplayRect` | `player/avplay.js` | Position of the video plane on screen |
+| `webapis.avplay.setDisplayMethod` | `player/avplay.js` | Aspect ratio (letterbox / fill) |
+| `setStreamingProperty('SET_MODE_4K')` | `player/avplay.js` | 4K hardware path (2020+ models) |
+| `setStreamingProperty('ADAPTIVE_INFO')` | `player/avplay.js` | HLS starting bitrate → faster channel start |
+| `webapis.avplay.setBufferingParam` | `player/avplay.js` | Initial (4 s) and post-seek/stall (5 s) buffer; Samsung's minimum is 4 s |
+| `webapis.avplay.setTimeoutForBuffering` | `player/avplay.js` | Keep playing if the buffer is not filled within 10 s (no long frozen screen after a seek) |
+| `webapis.avplay.seekTo` | `player/avplay.js` | Seeking. Asynchronous and blocking: no other AVPlay call is made until the callback arrives; requests are queued |
+| `getTotalTrackInfo` / `setSelectTrack` | `player/avplay.js` | Multiple audio / subtitle selection |
+| `getStreamingProperty('CURRENT_BANDWIDTH')` | `player/avplay.js` | Diagnostics |
+| `tizen.tvinputdevice.registerKey` | `js/core/keys.js` | Media, channel, color and number keys |
+| `tizen.tvinputdevice.getSupportedKeys` | `js/core/keys.js` | Detecting firmware differences |
+| `tizen.application.getCurrentApplication().exit()` | `js/core/router.js` | Exiting the app |
+| `webapis.productinfo.getRealModel / getFirmware` | `views/settings.js` | System info screen |
+| `webapis.productinfo.isUdPanelSupported` | `views/settings.js` | 4K panel detection |
+| `tizen.systeminfo.getCapability(platform.version)` | `views/settings.js` | Tizen version |
+| `tizen.filesystem.resolve / listStorages` | `services/backup.js` | Backup to USB / the Downloads folder |
+| `tizen.filesystem.openFile('wgt-package/…')` | `services/presets.js` | Fallback for reading `hesaplar.txt` (Tizen 5.0+) |
 
-Her çağrı `try/catch` ve özellik algılama (feature detection) ile korunmuştur;
-`SET_MODE_4K` gibi yeni özellikler eski firmware'de sessizce devre dışı kalır.
+Every call is guarded with `try/catch` and feature detection; newer features such as
+`SET_MODE_4K` are silently disabled on old firmware.
 
 ---
 
-## Hata yönetimi
+## Error handling
 
-Tüm hatalar `App.AppError` tipine dönüştürülür; ham JavaScript hatası kullanıcıya
-gösterilmez ve uygulama çökmez (`window.onerror` ve `unhandledrejection` yakalanır).
+All errors are converted to the `App.AppError` type; raw JavaScript errors are never shown
+to the user and the app does not crash (`window.onerror` and `unhandledrejection` are caught).
 
-| Kod | Ne zaman | Kullanıcıya gösterilen |
+| Code | When | Shown to the user (in Turkish) |
 |---|---|---|
-| `NETWORK` | Bağlantı kurulamadı / sunucu kapalı | "Sunucuya bağlanılamadı…" |
-| `TIMEOUT` | İstek zaman aşımı | "Sunucu zamanında yanıt vermedi…" |
-| `AUTH` | 401/403 veya `auth=0` | "Kullanıcı adı veya şifre hatalı…" |
-| `EXPIRED` | Hesap süresi dolmuş / banlı | "Hesabınızın süresi dolmuş…" |
-| `PARSE` | JSON yerine HTML, bozuk M3U/XML | "Sunucudan gelen veri okunamadı…" |
-| `EMPTY` | Playlist boş | "Gösterilecek içerik bulunamadı." |
-| `PLAYER` | AVPlay hatası | AVPlay kodunun Türkçe karşılığı |
-| `OFFLINE` | TV internete bağlı değil | "Televizyon internete bağlı değil…" |
-| `STORAGE` | localStorage kotası doldu | "Cihaz depolama alanı dolu…" |
+| `NETWORK` | Connection failed / server down | "Could not connect to the server…" |
+| `TIMEOUT` | Request timed out | "The server did not respond in time…" |
+| `AUTH` | 401/403 or `auth=0` | "Wrong username or password…" |
+| `EXPIRED` | Account expired / banned | "Your account has expired…" |
+| `PARSE` | HTML instead of JSON, broken M3U/XML | "The data from the server could not be read…" |
+| `EMPTY` | Empty playlist | "No content to show." |
+| `PLAYER` | AVPlay error | A description of the AVPlay error code |
+| `OFFLINE` | The TV is not connected to the internet | "The TV is not connected to the internet…" |
+| `STORAGE` | localStorage quota full | "Device storage is full…" |
 
-- **Ağ hatalarında otomatik yeniden deneme** (1 tekrar + 1,2 sn bekleme). `AUTH` ve
-  `404` tekrarlanmaz.
-- **Yayın açılmazsa** önce format değiştirilir (`.m3u8` ↔ `.ts`), sonra 2 kez yeniden
-  denenir; ancak ondan sonra kullanıcıya hata gösterilir. Film/bölümde yeniden deneme
-  **kalınan yerden** başlar.
-- **Sarma yanıt vermezse** (bazı firmware'ler geçersiz konumda callback çağırmaz) kilit
-  8 sn sonra kendiliğinden açılır; oynatıcı kilitli kalmaz.
-- **Hızlı kanal değiştirmede** eski yayının geç gelen başarı/hata sonucu yok sayılır;
-  yanlış kanal yeniden denenmez.
-- **EPG bulunamaması hata sayılmaz** — sessizce boş geçilir, kanal yine açılır.
-- **`hesaplar.txt` okunamazsa** veya satırları anlaşılamazsa uygulama normal açılır.
+- **Automatic retry on network errors** (1 retry + 1.2 s wait). `AUTH` and `404` are not
+  retried.
+- **If a stream does not open**, the format is switched first (`.m3u8` ↔ `.ts`), then it is
+  retried twice; only then is an error shown to the user. For movies/episodes the retry
+  starts **from where playback stopped**.
+- **If a seek never answers** (some firmware does not call the callback for an invalid
+  position), the lock releases itself after 8 s; the player never stays locked.
+- **When zapping quickly**, a late success/error result from the previous stream is ignored;
+  the wrong channel is never retried.
+- **Missing EPG is not an error** — it is silently left empty and the channel still opens.
+- **If `hesaplar.txt` cannot be read** or its lines cannot be understood, the app opens
+  normally.
 
 ---
 
-## İnternetten altyazı (OpenSubtitles)
+## Online subtitles (OpenSubtitles)
 
-Kaynaktaki altyazı bozuk, eksik veya **görüntü tabanlı** (DVB-SUB / PGS — AVPlay bunları
-metin olarak vermez) olduğunda oynatıcıda **SARI** tuş → *İnternetten altyazı indir* ile
-OpenSubtitles'tan altyazı çekilebilir.
+When the source's subtitles are broken, missing or **image-based** (DVB-SUB / PGS — AVPlay
+does not provide these as text), you can fetch subtitles from OpenSubtitles in the player
+with the **YELLOW** key → *Download subtitles from the internet* (*Internetten altyazi indir*).
 
-**Gerekenler (kullanıcı tarafında):**
+**What you need (on the user's side):**
 
-1. Ücretsiz [OpenSubtitles](https://www.opensubtitles.com) hesabı
-2. Kendi **API anahtarınız** (Hesabım → *API Consumers* → *New Consumer*)
-3. TV'de Ayarlar → **Altyazı Servisi** ekranına anahtar + kullanıcı adı + şifre — ya da
-   her build'de yeniden girmemek için `hesaplar.txt` dosyasına
-   `opensubtitles | API_ANAHTARI | KULLANICI | SIFRE` satırı
-   (bkz. [hesaplar.txt](#hesabınızı-her-buildde-yeniden-girmeyin-hesaplartxt))
+1. A free [OpenSubtitles](https://www.opensubtitles.com) account
+2. Your own **API key** (My Account → *API Consumers* → *New Consumer*)
+3. The key + username + password entered on the TV under *Settings → Subtitle Service*
+   (*Ayarlar → Altyazi Servisi*) — or, to avoid re-entering it on every build, an
+   `opensubtitles | API_KEY | USERNAME | PASSWORD` line in `hesaplar.txt`
+   (see [hesaplar.txt](#enter-your-account-once-hesaplartxt))
 
-> **API anahtarı uygulamaya gömülü değildir.** Servisin kullanım şartları her uygulamanın
-> kendi anahtarını kullanmasını gerektirir ve indirme kotası anahtarın sahibine yazılır.
-> Bilgiler yalnızca televizyonda saklanır.
+> **No API key is embedded in the app.** The service's terms of use require every app to use
+> its own key, and the download quota is charged to the key's owner. The details are stored
+> only on the TV.
 
-| Adım | Ayrıntı |
+| Step | Details |
 |---|---|
-| Arama | Bölümlerde **dizi adı + sezon + bölüm**, filmlerde **ad + yıl**. `1080p`, `WEB-DL`, `x264` gibi etiketler temizlenerek isabet artırılır |
-| Sıralama | Önce güvenilir yükleyiciler, makine çevirileri geriye; sonra indirme sayısı |
-| İndirme | `POST /download` → geçici bağlantı → `.srt`. Kalan günlük hak ekranda gösterilir |
-| Senkron | Gecikme ayarı ±3 sn. **Artı** değer altyazıyı geciktirir, **eksi** erkene alır |
-| Yerel önbellek | İndirilen her altyazı cihazda (IndexedDB) saklanır; aynı bölüm tekrar açıldığında internete çıkılmaz ve günlük hak harcanmaz |
-| Toplu indirme | *Bu sezonun tüm altyazılarını indir* — kayıtlı olanları atlar, kota bitince durur, RETURN ile iptal edilir |
+| Search | For episodes: **series name + season + episode**; for movies: **title + year**. Tags such as `1080p`, `WEB-DL` and `x264` are stripped to improve matching |
+| Sorting | Trusted uploaders first, machine translations last; then by download count |
+| Download | `POST /download` → temporary link → `.srt`. The remaining daily quota is shown on screen |
+| Sync | Delay adjustment ±3 s. A **positive** value delays the subtitles, a **negative** value shows them earlier |
+| Local cache | Every downloaded subtitle is stored on the device (IndexedDB); when the same episode is opened again, no internet request is made and no quota is used |
+| Bulk download | *Download all subtitles for this season* (*Bu sezonun tum altyazilarini indir*) — skips the ones already saved, stops when the quota runs out, can be cancelled with RETURN |
 
-**Kota hakkında:** OpenSubtitles günlük hakkı dosya başına sayılır; 20 bölüm 20 hak
-harcar. Asıl kazanç yerel önbellektir: bir kez indirilen altyazı cihazda kalır.
-Bozuk bir altyazı için SARI tuş → **Yeniden indir**, hepsini silmek için
-Ayarlar → **Altyazı Önbelleğini Temizle**.
+**About the quota:** the OpenSubtitles daily quota is counted per file; 20 episodes use 20
+downloads. The real saving is the local cache: a subtitle downloaded once stays on the device.
+For a broken subtitle use the YELLOW key → **Download again** (*Yeniden indir*); to delete
+them all, use *Settings → Clear subtitle cache* (*Ayarlar → Altyazi Onbellegini Temizle*).
 
-**Sınırlar:** Eşleşme dosya adına değil başlığa dayanır, bu yüzden her zaman kusursuz
-senkron tutmayabilir (gecikme ayarı bunun için vardır). Canlı yayınlarda kullanılamaz.
-Bölüm kaydında dizi adı yoksa arama yapılamaz ve uygulama bunu açıkça söyler.
-
----
-
-## Veri saklama ve gizlilik
-
-- Tüm veriler **yalnızca televizyonda** saklanır (`localStorage` ve IndexedDB).
-- **Hiçbir veri dışarı gönderilmez.** Analytics, reklam, telemetri veya üçüncü taraf takip
-  yoktur. Uygulamanın yaptığı tek ağ isteği, kullanıcının girdiği IPTV sunucusuna
-  (ve isteğe bağlı olarak OpenSubtitles'a) yapılır.
-- Şifre cihaza özgü bir anahtarla **XOR + Base64** ile gizlenerek saklanır (`x1:` öneki).
-  **Bu şifreleme değildir**; amacı depolama dökümüne bakan birinin şifreyi çıplak gözle
-  okumasını engellemektir. Tizen TV web uygulamaları için gerçek bir keystore API'si yoktur.
-- **Yedek dosyası** (`iptv-player-yedek.json`) IPTV şifrelerinizi **düz metin** içerir.
-  USB belleği başkalarıyla paylaşmayın.
-- **`hesaplar.txt`** linkinizi, şifrenizi ve (yazdıysanız) OpenSubtitles anahtarınızı düz
-  metin içerir ve `.wgt` paketine girer.
-  Dosya `.gitignore`'dadır (repoya girmez); **.wgt paketini başkalarıyla paylaşmayın.**
-- **Ayarlar → Uygulama Verilerini Sıfırla** ile her şey silinir.
+**Limitations:** matching is based on the title, not the file name, so sync may not always be
+perfect (that is what the delay adjustment is for). Not available for live streams. If an
+episode record has no series name, no search is possible and the app says so clearly.
 
 ---
 
-## Testler
+## Data storage and privacy
 
-Proje `jsdom` ile otomatik test edilir; **gerçek TV gerekmez.**
+- All data is stored **only on the TV** (`localStorage` and IndexedDB).
+- **No data is sent anywhere.** There is no analytics, advertising, telemetry or third-party
+  tracking. The only network requests the app makes go to the IPTV server the user entered
+  (and, optionally, to OpenSubtitles).
+- The password is stored obfuscated with a device-specific key using **XOR + Base64**
+  (`x1:` prefix). **This is not encryption**; its purpose is to stop someone looking at a
+  storage dump from reading the password at a glance. Tizen TV web apps have no real keystore
+  API.
+- The **backup file** (`iptv-player-yedek.json`) contains your IPTV passwords in **plain
+  text**. Do not share the USB stick with others.
+- **`hesaplar.txt`** contains your link, your password and (if you added it) your
+  OpenSubtitles key in plain text, and it goes into the `.wgt` package. The file is in
+  `.gitignore` (it never enters the repository); **do not share the .wgt package with others.**
+- **Settings → Reset app data** (*Ayarlar → Uygulama Verilerini Sifirla*) deletes everything.
+
+---
+
+## Tests
+
+The project is tested automatically with `jsdom`; **no real TV is needed.**
 
 ```cmd
 cd tests
@@ -662,128 +684,131 @@ node e2e.test.js
 ```
 
 ```
-tests/unit.test.js        56 kontrol   parser'lar, URL üretimi, sanal liste, hata tipleri, modal odağı
-tests/nav.test.js         21 kontrol   kumanda yön tuşu navigasyonu (gerçek 1080p ölçüleriyle)
-tests/m3u.test.js         43 kontrol   M3U dizi tespiti, grup sırası, kompakt önbellek, BigStore
-tests/qr.test.js          15 kontrol   QR kodlayıcı — referans kütüphaneyle birebir matris
-tests/subtitles.test.js   73 kontrol   SRT/VTT çözümleme, zaman çizelgesi, OpenSubtitles istemcisi
-tests/e2e.test.js         62 kontrol   sahte Xtream sunucusuyla tüm ekranların gezilmesi
+tests/unit.test.js        56 checks   parsers, URL generation, virtual list, error types, modal focus
+tests/nav.test.js         21 checks   remote arrow-key navigation (with real 1080p dimensions)
+tests/m3u.test.js         43 checks   M3U series detection, group order, compact cache, BigStore
+tests/qr.test.js          15 checks   QR encoder — matrix identical to the reference library
+tests/subtitles.test.js   73 checks   SRT/VTT parsing, timeline, OpenSubtitles client
+tests/e2e.test.js         62 checks   walking through every screen against a fake Xtream server
 ---------------------------------------------------------------------------------------------
-                         270 kontrol
+                         270 checks
 ```
 
-**Kapsam:** açılış → ana ekran → canlı TV (2.500 kanal) → EPG → kanal numarasıyla geçiş →
-favori → oynatıcı → geri → filmler (600 afiş) → dizi → sezon/bölüm → favoriler → son
-izlenenler → arama → ayarlar → kök RETURN'de çıkış onayı. Ayrıca M3U ve XMLTV çözümleme,
-Xtream URL üretimi, şifre gizleme, Türkçe normalizasyon, 20.000 öğelik sanal liste ve
-önbelleğin tekrar istek atmadığı doğrulanır.
+**Coverage:** startup → home → live TV (2,500 channels) → EPG → switching by channel number →
+favorite → player → back → movies (600 posters) → series → season/episode → favorites →
+recently watched → search → settings → exit confirmation on root RETURN. M3U and XMLTV
+parsing, Xtream URL generation, password obfuscation, Turkish normalization, a
+20,000-item virtual list and the cache not repeating requests are verified as well.
 
-**QR kodlayıcı:** `js/ui/qrcode.js` sıfırdan yazılmıştır (Tizen paketi çevrimdışı çalıştığı
-için CDN kullanılamaz). Doğruluğu npm `qrcode` referans kütüphanesiyle modül modül
-karşılaştırılarak sınanır: 1–13 arası sürümlerde, L ve M hata düzeltme seviyelerinde,
-UTF-8 Türkçe metin dahil birebir aynı matris. Referans kütüphane yalnızca testlere dahildir,
-uygulamaya girmez.
+**QR encoder:** `js/ui/qrcode.js` was written from scratch (a CDN cannot be used because the
+Tizen package works offline). Its correctness is tested by comparing it module by module with
+the npm `qrcode` reference library: identical matrices for versions 1–13, error correction
+levels L and M, including UTF-8 Turkish text. The reference library is only part of the
+tests and never enters the app.
 
-> `tests/` klasörünü `.wgt` paketine **dahil etmeyin** (bkz. [Hızlı başlangıç](#tvye-kurulum-özet)).
+> **Do not include** the `tests/` folder in the `.wgt` package (see [Quick start](#installing-on-the-tv-summary)).
 
 <details>
-<summary><b>Geliştirme geçmişi: testlerde ve gerçek TV'de bulunup düzeltilen kusurlar</b></summary>
+<summary><b>Development history: defects found and fixed in tests and on a real TV</b></summary>
 
 &nbsp;
 
-| Kusur | Etki | Düzeltme |
+| Defect | Effect | Fix |
 |---|---|---|
-| Yön tuşu navigasyonu hizalamayı değil merkez mesafesini önceliklendiriyordu | Giriş ekranında ▼ metin kutularını atlayıp doğrudan butona gidiyordu | `js/core/nav.js` — dikey harekette yatay kesişimi olan öğeler daima öncelikli |
-| Oynatıcı ekranı `mount()` içinde yayın hazır olana kadar bekliyordu | Ölü bir kanalda kullanıcı ~30 sn RETURN'e basamıyordu | `views/player.js` — oynatma promise'i döndürülmüyor, durum olaylarla yönetiliyor |
-| Alt ekrandan geri dönünce hiçbir öğe odaklı kalmıyordu | Kumandada hangi öğenin seçili olduğu görünmüyordu | `js/core/router.js` — `activate()` içinde odak kurtarma |
-| "★ Favoriler" kategorisi listenin başındaydı | İlk açılışta kanal listesi boş görünüyordu | `views/live.js`, `movies.js`, `series.js` — Favoriler "Tüm Kanallar"ın ardına alındı |
-| `#EXTGRP` yalnızca `#EXTINF`'ten sonra yazıldığında çalışıyordu | Bazı playlistlerde tüm gruplar "Diğer" oluyordu | `services/m3u.js` — yapışkan grup, her iki sıralama destekli |
-| Hesap bitiş tarihi yalnızca ekran yeniden açılınca görünüyordu | Açılışta üst barda sadece kullanıcı adı vardı | `views/home.js` — `profile:userinfo` olayına abone |
-| `U.rem()` her satırda `getComputedStyle()` çağırıyordu | Kaydırmada zorunlu senkron layout, gözle görülür kasma | `js/core/utils.js` — değer önbelleklenir |
-| Liste satırları her kaydırmada sıfırdan kuruluyordu | Gereksiz DOM yaratma/silme | `virtualList.js` + view'lar — `create`/`update` iskelet deseni |
-| Odak halkası dışa doğru `box-shadow` idi | `overflow:hidden` kırpıyordu, seçili öğe tam görünmüyordu | `css/*` — içe doğru (inset) halka |
-| Boş listede yön tuşları genel navigasyona düşüyordu | Kategori seçiminde odak başka kolona kaçıyordu | `virtualList.js` — boş listede tuş yutulur |
-| Kategori değişiminde liste boşaltılıp "Yükleniyor" gösteriliyordu | Titreme ve odak kaybı | `views/live.js` — eski içerik yerinde kalır |
-| M3U bölümleri film sayılıyordu | Diziler Filmler'e karışıyor, "dizi yok" deniyordu | `services/m3u.js` — dizi/bölüm kalıp tespiti + gruplama |
-| M3U grupları alfabetik sıralanıyordu | TR kategorileri en üstte görünmüyordu | `services/m3u.js` — playlist sırası korunur |
-| Çözümlenmiş playlist kotayı aşıyordu | Her açılışta yeniden indirme + çözümleme | `services/m3u.js` — kompakt kodlama (%83 küçülme) |
-| Yeniden kurulumda tüm veri siliniyordu | Kayıtlı playlistler her build'de gidiyordu | `services/backup.js` — USB/dahili depolamaya yedek |
-| Ses/altyazı menüsünde seçili parça belli değildi | Hangisinin çaldığı görünmüyordu | `player/controller.js` + `views/player.js` — ✔ işareti |
-| İleri sarma tek adımlıydı | Uzun içerikte çok fazla tuşa basmak gerekiyordu | `views/player.js` — hızlanan sarma + tek seek |
-| Modal pencerelerde odak hiç görünmüyordu | Ses/altyazı/onay listelerinde seçili satır belli değildi | `css/components.css` — odak stili `[data-focusable]` şartına bağlıydı, modal öğeleri bu niteliği taşımıyor |
-| Altyazı seçilse de ekranda görünmüyordu | AVPlay altyazıyı çizmez, metni olayla verir; uygulama çizmiyordu | `views/player.js` — `.subtitle` katmanı + `player:subtitle` dinleyicisi |
-| Ses/altyazı seçimi her içerikte sıfırlanıyordu | Her bölümde yeniden seçmek gerekiyordu | `player/controller.js` — dil kodu kalıcı hatırlanır |
-| OK tuşu duraklatmıyordu | Orta tuş yalnızca bilgi şeridini açıyordu | `views/player.js` — OK artık durdur/devam; bilgi şeridi INFO tuşunda |
-| Bazı altyazılar hiç gelmiyordu | Görüntü tabanlı altyazıları AVPlay metin olarak vermez, sebep belli değildi | `views/player.js` — 12 sn içinde metin gelmezse açıklayıcı uyarı |
-| Otomatik dil tercihi elle yapılan seçimi eziyordu | Seçimden 1 sn sonra geri değişebiliyordu | `player/controller.js` — `manualPick` koruması |
-| Bölüm kayıtlarında dizi adı kayboluyordu | Favoriler/Son İzlenenler'den açılan bölümde başlık "Bölüm 1" görünüyor, altyazı araması bununla yapılıyordu | `services/favorites.js`, `history.js` — `seriesName`/`season`/`episodeNum` saklanıyor |
-| Toplu indirmede indirme hatası döngüyü sessizce durduruyordu | "Yükleniyor" ekranda takılı kalıyordu | `views/player.js` — tek `.catch()` |
-| Büyük playlist localStorage kotasına sığmıyordu | Her açılışta yeniden indirme | `js/core/bigstore.js` (IndexedDB) + `services/m3u.js` ön ek sıkıştırması |
-| `seekTo` sürerken başka AVPlay çağrıları yapılıyordu (ikinci sarma, duraklatma, parça listesi) | İleri sarınca görüntü donuyordu | `player/avplay.js` — meşgul kilidi: istekler sıraya alınır, yalnızca son hedef uygulanır |
-| Sarma, sürmekte olan sarmanın hedefinden değil eski konumdan hesaplanıyordu | ⏩ ileri yerine geri atlayabiliyordu | `player/controller.js` — `seekState`, sarma sırasında gelen eski konumlar yok sayılır |
-| ⏪ ⏩ her basışta ayrı `seekTo` gönderiyordu | Ard arda basınca üst üste sarma, donma | `views/player.js` — ok tuşlarıyla aynı biriktirme + tek sarma |
-| `setBufferingParam` 2 sn veriliyordu (Samsung alt sınırı 4 sn) | Sarma sonrası yeniden tamponlama bozuluyordu | `player/avplay.js` — 4 / 5 sn; `setTimeoutForBuffering` 20 → 10 sn |
-| Kaldığı yerden devam sarması sürerken ses/altyazı listesi okunuyordu | Bölüm açılışında donma | `player/controller.js` — dil tercihi sarma bitince uygulanır |
-| Hızlı kanal değişiminde eski yayının sonucu yenisini etkiliyordu | Yanlış kanal yeniden deneniyordu | `player/controller.js` — `streamGen` ile eski sonuçlar yok sayılır |
-| Ağ hatası sonrası yeniden denemede VOD baştan başlıyordu | Film başa dönüyordu | `player/controller.js` — kalınan konumdan devam |
-| Canlı yayında duraklatma reddedildiği halde durum "duraklatıldı" yapılıyordu | Ekranda "Duraklatıldı" yazarken görüntü akıyordu | `player/controller.js` — motor sonucu kontrol ediliyor |
-| Sanal listede ön izleme payı her zaman bir tam satırdı | Afiş ızgarasında seçili satır üstten kesiliyor, liste geri kayıyordu | `virtualList.js` — `anchor`/`edge` kaydırma, sınırlı pay, `posterGrid()` ile tam iki satır |
-| Afiş odak halkası `inset box-shadow` idi | Resmin arkasında kalıyor, seçili afiş görünmüyordu | `css/components.css` — `::after` katmanı resmin üstünde |
-| `.modal__list` konumlandırılmamıştı (`offsetTop` yanlış referans) | Altyazı listesinde aşağı inince liste yukarı fırlıyordu | `css/components.css` + `js/ui/modal.js` |
-| Altyazının `bottom` değeri bilgi şeridiyle aniden değişiyordu | Altyazı yukarı zıplıyordu | `css/views.css` — `transform` geçişi |
-| `.list` kuralı `.col__body` konumunu eziyordu | Kolon başlıkları ilk satırın üstüne biniyordu | `css/components.css` — `.list` konum vermez |
-| Ayarlar listesinin kapsayıcısı konumlandırılmamıştı | Satırlar sağ paneli kaplıyor, yazılar taşıyordu | `css/views.css` — `.settings__list { position: relative }` |
-| Liste yenilenince kaydırma sıfırlanıp odak ortalanıyordu | Ayarlarda her OK'ta liste zıplıyordu | `virtualList.js` — `keepScroll` |
-| Giriş kartı ~1200 px yüksekliğindeydi | 1080p ekranda üstü ve "Bağlan" butonu kesiliyordu | `views/login.js`, `opensubtitles.js` — iki sütunlu kart |
-| Gövde ekranın dibine kadar iniyordu | İpucu çubuğu listelerin üstüne biniyordu | `css/layout.css` — gövde alt boşluğu |
-| Canlı TV'de KIRMIZI tuşu tanımsız `afterChannels()` çağırıyordu | Yenileme hata veriyor, filtre yok sayılıyordu | `views/live.js` |
-| Kayıtlı playlistler her build'de siliniyordu | Uzun linki her kurulumda kumandayla yazmak gerekiyordu | `services/presets.js` + `hesaplar.txt` |
-| OpenSubtitles anahtarı her build'de siliniyordu | Altyazı servisini her kurulumda yeniden girmek gerekiyordu | `services/presets.js` — `opensubtitles \|` satırı |
+| Arrow-key navigation prioritized center distance over alignment | On the login screen ▼ skipped the text fields and went straight to the button | `js/core/nav.js` — in vertical movement, items with horizontal overlap always win |
+| The player screen waited inside `mount()` until the stream was ready | On a dead channel the user could not press RETURN for ~30 s | `views/player.js` — the playback promise is not returned; state is driven by events |
+| No item stayed focused after returning from a sub-screen | You could not see which item was selected on the remote | `js/core/router.js` — focus recovery in `activate()` |
+| The "★ Favorites" category was at the top of the list | The channel list looked empty on first open | `views/live.js`, `movies.js`, `series.js` — Favorites moved after "All Channels" |
+| `#EXTGRP` only worked when written after `#EXTINF` | In some playlists every group became "Other" | `services/m3u.js` — sticky group, both orders supported |
+| The account expiry date only appeared after reopening the screen | At startup the top bar showed only the username | `views/home.js` — subscribes to the `profile:userinfo` event |
+| `U.rem()` called `getComputedStyle()` on every row | Forced synchronous layout while scrolling, visible stutter | `js/core/utils.js` — the value is cached |
+| List rows were rebuilt from scratch on every scroll | Needless DOM creation/removal | `virtualList.js` + views — `create`/`update` skeleton pattern |
+| The focus ring was an outward `box-shadow` | `overflow:hidden` clipped it; the selected item was not fully visible | `css/*` — inward (inset) ring |
+| Arrow keys in an empty list fell through to global navigation | Focus escaped to another column during category selection | `virtualList.js` — keys are swallowed in an empty list |
+| Changing category emptied the list and showed "Loading" | Flicker and focus loss | `views/live.js` — the old content stays in place |
+| M3U episodes were counted as movies | Series mixed into Movies, "no series" was reported | `services/m3u.js` — series/episode pattern detection + grouping |
+| M3U groups were sorted alphabetically | Turkish categories did not appear at the top | `services/m3u.js` — playlist order is preserved |
+| The parsed playlist exceeded the quota | Re-downloading + re-parsing on every start | `services/m3u.js` — compact encoding (83% smaller) |
+| Reinstalling deleted all data | Saved playlists were lost on every build | `services/backup.js` — backup to USB/internal storage |
+| The selected track was not visible in the audio/subtitle menu | You could not tell which one was playing | `player/controller.js` + `views/player.js` — ✔ mark |
+| Fast-forward used a single fixed step | Long content needed far too many key presses | `views/player.js` — accelerating seek + single seek |
+| Focus was not visible at all in modal dialogs | The selected row was unclear in audio/subtitle/confirm lists | `css/components.css` — the focus style required `[data-focusable]`, which modal items do not carry |
+| Selected subtitles did not appear on screen | AVPlay does not render subtitles, it delivers the text via an event; the app did not draw it | `views/player.js` — `.subtitle` layer + `player:subtitle` listener |
+| Audio/subtitle selection reset for every item | You had to choose again for every episode | `player/controller.js` — the language code is remembered persistently |
+| The OK key did not pause | The center key only opened the info bar | `views/player.js` — OK now pauses/resumes; the info bar is on the INFO key |
+| Some subtitles never arrived | AVPlay does not deliver image-based subtitles as text, and the reason was unclear | `views/player.js` — an explanatory warning if no text arrives within 12 s |
+| The automatic language preference overrode a manual choice | It could switch back 1 s after selection | `player/controller.js` — `manualPick` guard |
+| The series name was lost from episode records | An episode opened from Favorites/Recently Watched was titled "Episode 1", and the subtitle search used that | `services/favorites.js`, `history.js` — `seriesName`/`season`/`episodeNum` are stored |
+| In bulk download a download error silently stopped the loop | "Loading" stayed stuck on screen | `views/player.js` — a single `.catch()` |
+| A large playlist did not fit in the localStorage quota | Re-downloading on every start | `js/core/bigstore.js` (IndexedDB) + prefix compression in `services/m3u.js` |
+| Other AVPlay calls were made while `seekTo` was running (a second seek, pause, track list) | The picture froze on fast-forward | `player/avplay.js` — busy lock: requests are queued, only the last target is applied |
+| A seek was calculated from the old position, not from the target of the seek in progress | ⏩ could jump backwards instead of forwards | `player/controller.js` — `seekState`; stale positions during a seek are ignored |
+| ⏪ ⏩ sent a separate `seekTo` on every press | Repeated presses caused overlapping seeks and freezes | `views/player.js` — the same accumulation as the arrow keys + a single seek |
+| `setBufferingParam` was given 2 s (Samsung's minimum is 4 s) | Re-buffering after a seek misbehaved | `player/avplay.js` — 4 / 5 s; `setTimeoutForBuffering` 20 → 10 s |
+| The audio/subtitle list was read while the resume seek was running | Freeze when opening an episode | `player/controller.js` — language preference is applied after the seek |
+| On fast zapping the previous stream's result affected the new one | The wrong channel was retried | `player/controller.js` — `streamGen` ignores stale results |
+| Retrying after a network error restarted VOD from the beginning | The movie went back to the start | `player/controller.js` — resumes from the last position |
+| The state became "paused" even though the live stream rejected the pause | The screen said "Paused" while the picture kept running | `player/controller.js` — the engine's result is checked |
+| The look-ahead padding in the virtual list was always a full row | In the poster grid the selected row was cut off at the top and the list scrolled back | `virtualList.js` — `anchor`/`edge` scrolling, bounded padding, exactly two rows with `posterGrid()` |
+| The poster focus ring was an `inset box-shadow` | It stayed behind the image; the selected poster was not visible | `css/components.css` — a `::after` layer on top of the image |
+| `.modal__list` was not positioned (`offsetTop` used the wrong reference) | Scrolling down the subtitle list made it jump up | `css/components.css` + `js/ui/modal.js` |
+| The subtitle's `bottom` value changed abruptly with the info bar | Subtitles jumped up | `css/views.css` — `transform` transition |
+| The `.list` rule overrode the positioning of `.col__body` | Column headers overlapped the first row | `css/components.css` — `.list` sets no position |
+| The settings list container was not positioned | Rows covered the right-hand panel and text overflowed | `css/views.css` — `.settings__list { position: relative }` |
+| Refreshing a list reset the scroll and centered the focus | In Settings the list jumped on every OK | `virtualList.js` — `keepScroll` |
+| The login card was ~1200 px tall | On a 1080p screen its top and the "Connect" button were cut off | `views/login.js`, `opensubtitles.js` — two-column card |
+| The body extended to the very bottom of the screen | The hint bar covered the lists | `css/layout.css` — bottom spacing for the body |
+| In Live TV the RED key called an undefined `afterChannels()` | Refresh threw an error and the filter was ignored | `views/live.js` |
+| Saved playlists were deleted on every build | The long link had to be typed with the remote on every install | `services/presets.js` + `hesaplar.txt` |
+| The OpenSubtitles key was deleted on every build | The subtitle service had to be entered again on every install | `services/presets.js` — `opensubtitles \|` line |
 
 </details>
 
 ---
 
-## Bilinen sınırlar
+## Known limitations
 
-- **Diziler yalnızca Xtream Codes** kaynaklarında tam çalışır; M3U'da sezon/bölüm yapısı yoktur.
-- **DRM'li içerik desteklenmez.** Gerekirse `config.xml`'e
-  `http://developer.samsung.com/privilege/drmplay` privilege'ı ve AVPlay'e DRM
-  yapılandırması eklenmelidir.
-- **Catch-up / arşiv oynatma yoktur.** Xtream API'sinden `tv_archive` bilgisi okunur ve
-  veri modelinde tutulur, ancak arşiv oynatma arayüzü bu sürümde yoktur.
-- PC tarayıcısında MPEG-TS/HLS oynatılamaz (bkz. [Hızlı başlangıç](#önce-bilgisayarda-deneyin-tv-gerekmez)).
-- **Favoriler, izleme geçmişi ve ayarlar** yeniden kurulumda hâlâ silinir (`hesaplar.txt`
-  yalnızca hesapları ve altyazı servisini kapsar). USB yedeği `tizen.filesystem.resolve()`
-  kullanır; bu yöntem Tizen 5.0'dan beri kullanımdan kaldırılmış (deprecated) durumdadır ve
-  yeni modellerde çalışmayabilir.
-- **Canlı yayın duraklatılamaz** (zaman kaydırma yoktur); PLAY/PAUSE'a basıldığında bu
-  ekranda belirtilir.
-
----
-
-## Katkıda bulunma
-
-Katkılar memnuniyetle karşılanır. Pull request açmadan önce:
-
-- **ES5 sözdizimi kullanın** (`var`, `function`; `class`, template literal, `async/await` yok).
-- **Katman kuralına uyun:** `views/` doğrudan `App.Xtream` / `App.M3U` çağırmaz, yalnızca `App.Content`.
-- **Framework veya çalışma zamanı bağımlılığı eklemeyin.** Paket çevrimdışı çalışır.
-- **Gerçek sunucu adresi, kullanıcı adı, şifre veya API anahtarı** koda, teste ya da
-  örneklere koymayın; `http://SERVER:PORT` gibi yer tutucular kullanın.
-- Her `webapis.*` / `tizen.*` çağrısını `try/catch` ve özellik algılamayla koruyun.
-- Testleri çalıştırın (bkz. [Testler](#testler)); yeni davranış için test ekleyin.
-- Görsel dosyalarını (`icon.png`, `assets/splash.jpg`), kişisel `hesaplar.txt`
-  dosyanızı ve imzalama sertifikalarını (`*.p12`, `*.pwd`, `*.pri`) **commit etmeyin**
-  (hepsi `.gitignore`'dadır).
-- AVPlay'e yeni bir çağrı ekliyorsanız `player/avplay.js` içindeki kilitten geçirin
-  (`_run`); `seekTo` / `prepareAsync` sürerken doğrudan AVPlay çağırmak görüntüyü dondurur.
-
-Hata bildirirken TV modelini, Tizen sürümünü (Ayarlar → Sistem Bilgisi) ve mümkünse
-`sdb dlog -v time | findstr /i "ConsoleMessage"` çıktısını ekleyin.
+- **Series only work fully with Xtream Codes** sources; M3U has no season/episode structure.
+- **DRM-protected content is not supported.** If needed, add the
+  `http://developer.samsung.com/privilege/drmplay` privilege to `config.xml` and a DRM
+  configuration to AVPlay.
+- **No catch-up / archive playback.** The Xtream API's `tv_archive` information is read and
+  kept in the data model, but this version has no archive playback interface.
+- MPEG-TS/HLS cannot be played in a PC browser (see [Quick start](#try-it-on-a-pc-first-no-tv-needed)).
+- **Favorites, watch history and settings** are still deleted on reinstall (`hesaplar.txt`
+  only covers accounts and the subtitle service). The USB backup uses
+  `tizen.filesystem.resolve()`, which has been deprecated since Tizen 5.0 and may not work on
+  newer models.
+- **Live streams cannot be paused** (there is no time-shift); pressing PLAY/PAUSE says so on
+  screen.
 
 ---
 
-## Lisans
+## Contributing
 
-Bu proje [LICENSE](LICENSE) dosyasındaki koşullarla dağıtılır.
+Contributions are welcome. Before opening a pull request:
+
+- **Use ES5 syntax** (`var`, `function`; no `class`, template literals or `async/await`).
+- **Follow the layer rule:** `views/` never calls `App.Xtream` / `App.M3U` directly, only
+  `App.Content`.
+- **Do not add a framework or runtime dependency.** The package works offline.
+- **Never put a real server address, username, password or API key** in code, tests or
+  examples; use placeholders such as `http://SERVER:PORT`.
+- Guard every `webapis.*` / `tizen.*` call with `try/catch` and feature detection.
+- Run the tests (see [Tests](#tests)); add tests for new behavior.
+- **Do not commit** image files (`icon.png`, `assets/splash.jpg`), your personal
+  `hesaplar.txt` or signing certificates (`*.p12`, `*.pwd`, `*.pri`) (they are all in
+  `.gitignore`).
+- If you add a new AVPlay call, route it through the lock in `player/avplay.js` (`_run`);
+  calling AVPlay directly while `seekTo` / `prepareAsync` is running freezes the picture.
+- Code comments and user-facing texts are in Turkish; keep new texts consistent with them.
+
+When reporting a bug, include the TV model, the Tizen version (*Settings → System Info* /
+*Ayarlar → Sistem Bilgisi*) and, if possible, the output of
+`sdb dlog -v time | findstr /i "ConsoleMessage"`.
+
+---
+
+## License
+
+This project is distributed under the terms of the [LICENSE](LICENSE) file.
