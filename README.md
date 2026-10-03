@@ -202,8 +202,8 @@ için uygulama otomatik olarak HTML5 `<video>` moduna geçer.
   gelmemesi normaldir.** Liste, gezinme, arama, favoriler, ayarlar ve hata yönetimi
   eksiksiz test edilebilir.
 - Klasörde dolu bir `hesaplar.txt` varsa tarayıcıda da hesap otomatik eklenir ve giriş
-  ekranı atlanır. Giriş ekranını denemek için tarayıcının site verilerini silip dosyayı
-  geçici olarak boşaltın.
+  ekranı atlanır. Giriş ekranını denemek için hesabı uygulama içinden silin
+  (*Playlistlerim* → KIRMIZI); aynı tarayıcıda geri eklenmez.
 
 ### TV'ye kurulum (özet)
 
@@ -380,6 +380,16 @@ listesindeyseniz önce sezon satırına dönülür, metin düzenlenirken TV klav
 `App.Xtream` doğrudan çağrılmaz; hepsi `App.Content` üzerinden geçer. Yeni bir kaynak
 türü eklemek için yalnızca `content.js` genişletilir.
 
+**Açılış sırası:** `js/app.js` önce `services/presets.js` ile `hesaplar.txt`'yi okur
+(hesapları `services/profile.js`'e, altyazı ayarını `services/opensubtitles.js`'e yazar),
+ardından aktif hesap varsa ana ekranı, yoksa giriş ekranını açar.
+
+**Oynatıcı katmanı:** `player/controller.js` tüm sarmaları tek noktadan yönetir
+(`engineSeek`) ve sarma sürerken AVPlay'den gelen eski konumları yok sayar.
+`player/avplay.js`, AVPlay'in asenkron işlemleri (`prepareAsync`, `seekTo`) sürerken
+başka çağrı yapılmamasını garanti eden kilidi tutar: o sırada gelen duraklat/devam,
+parça seçimi ve görüntü ayarı işlem bitince uygulanır.
+
 ### Klasör yapısı
 
 ```
@@ -388,7 +398,7 @@ iptv-app/
 ├── tizen_web_project.yaml     VS Code Tizen eklentisi proje ayarları
 ├── index.html                 Tek sayfa; script yükleme sırası burada
 ├── icon.png                   Uygulama simgesi (repoda yok, bkz. yukarıda)
-├── hesaplar.txt               Kişisel hesap linkleri; her build'e girer (repoda yok)
+├── hesaplar.txt               Kişisel hesap linkleri + altyazı anahtarı; her build'e girer (repoda yok)
 ├── KURULUM.md                 Tizen Studio + TV'ye kurulum kılavuzu
 │
 ├── css/
@@ -566,8 +576,14 @@ gösterilmez ve uygulama çökmez (`window.onerror` ve `unhandledrejection` yaka
 - **Ağ hatalarında otomatik yeniden deneme** (1 tekrar + 1,2 sn bekleme). `AUTH` ve
   `404` tekrarlanmaz.
 - **Yayın açılmazsa** önce format değiştirilir (`.m3u8` ↔ `.ts`), sonra 2 kez yeniden
-  denenir; ancak ondan sonra kullanıcıya hata gösterilir.
+  denenir; ancak ondan sonra kullanıcıya hata gösterilir. Film/bölümde yeniden deneme
+  **kalınan yerden** başlar.
+- **Sarma yanıt vermezse** (bazı firmware'ler geçersiz konumda callback çağırmaz) kilit
+  8 sn sonra kendiliğinden açılır; oynatıcı kilitli kalmaz.
+- **Hızlı kanal değiştirmede** eski yayının geç gelen başarı/hata sonucu yok sayılır;
+  yanlış kanal yeniden denenmez.
 - **EPG bulunamaması hata sayılmaz** — sessizce boş geçilir, kanal yine açılır.
+- **`hesaplar.txt` okunamazsa** veya satırları anlaşılamazsa uygulama normal açılır.
 
 ---
 
@@ -737,10 +753,12 @@ uygulamaya girmez.
 - **Catch-up / arşiv oynatma yoktur.** Xtream API'sinden `tv_archive` bilgisi okunur ve
   veri modelinde tutulur, ancak arşiv oynatma arayüzü bu sürümde yoktur.
 - PC tarayıcısında MPEG-TS/HLS oynatılamaz (bkz. [Hızlı başlangıç](#önce-bilgisayarda-deneyin-tv-gerekmez)).
-- **Favoriler ve izleme geçmişi** yeniden kurulumda hâlâ silinir (`hesaplar.txt` yalnızca
-  hesapları kapsar). USB yedeği `tizen.filesystem.resolve()` kullanır; bu yöntem Tizen
-  5.0'dan beri kullanımdan kaldırılmış (deprecated) durumdadır ve yeni modellerde
-  çalışmayabilir.
+- **Favoriler, izleme geçmişi ve ayarlar** yeniden kurulumda hâlâ silinir (`hesaplar.txt`
+  yalnızca hesapları ve altyazı servisini kapsar). USB yedeği `tizen.filesystem.resolve()`
+  kullanır; bu yöntem Tizen 5.0'dan beri kullanımdan kaldırılmış (deprecated) durumdadır ve
+  yeni modellerde çalışmayabilir.
+- **Canlı yayın duraklatılamaz** (zaman kaydırma yoktur); PLAY/PAUSE'a basıldığında bu
+  ekranda belirtilir.
 
 ---
 
@@ -755,8 +773,11 @@ Katkılar memnuniyetle karşılanır. Pull request açmadan önce:
   örneklere koymayın; `http://SERVER:PORT` gibi yer tutucular kullanın.
 - Her `webapis.*` / `tizen.*` çağrısını `try/catch` ve özellik algılamayla koruyun.
 - Testleri çalıştırın (bkz. [Testler](#testler)); yeni davranış için test ekleyin.
-- Görsel dosyalarını (`icon.png`, `assets/splash.jpg`) ve imzalama sertifikalarını
-  (`*.p12`, `*.pwd`, `*.pri`) **commit etmeyin.**
+- Görsel dosyalarını (`icon.png`, `assets/splash.jpg`), kişisel `hesaplar.txt`
+  dosyanızı ve imzalama sertifikalarını (`*.p12`, `*.pwd`, `*.pri`) **commit etmeyin**
+  (hepsi `.gitignore`'dadır).
+- AVPlay'e yeni bir çağrı ekliyorsanız `player/avplay.js` içindeki kilitten geçirin
+  (`_run`); `seekTo` / `prepareAsync` sürerken doğrudan AVPlay çağırmak görüntüyü dondurur.
 
 Hata bildirirken TV modelini, Tizen sürümünü (Ayarlar → Sistem Bilgisi) ve mümkünse
 `sdb dlog -v time | findstr /i "ConsoleMessage"` çıktısını ekleyin.
